@@ -1,2 +1,2 @@
 # Platform as a Service
-Our Platform as a Service for KIT418
+An eclipse project for Java Servlet to provide the result to interface.
