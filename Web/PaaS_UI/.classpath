@@ -13,10 +13,10 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/jsch-0.1.55.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/json-simple-1.1.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/openstack4j-3.1.0-withdeps.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/taglibs-standard-impl-1.2.5.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/Cloud.jar"/>
-	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/jsch-0.1.55.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/json-simple-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/openstack4j-3.1.0-withdeps.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/taglibs-standard-impl-1.2.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/Cloud.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -394,18 +394,16 @@ public class CloudControl {
     /*
      * main
      */
-    /*
     public static void main(String[] args) {
         CloudControl openstack = new CloudControl();
         
-        //System.out.println(openstack.ListServers());
+        System.out.println(openstack.ListServers());
         //System.out.println(openstack.getIP(INSTANCE_NAME));
-        openstack.createServer(INSTANCE_NAME);
-        openstack.transferFile(INSTANCE_NAME, LOCAL_FILE_PATH);
-        openstack.executeCommand(INSTANCE_NAME, REMOTE_FOLDER_PATH+REMOTE_FILE_NAME);
+        //openstack.createServer(INSTANCE_NAME);
+        //openstack.transferFile(INSTANCE_NAME, LOCAL_FILE_PATH);
+        //openstack.executeCommand(INSTANCE_NAME, REMOTE_FOLDER_PATH+REMOTE_FILE_NAME);
         
         //openstack.ListFlavors();
         //openstack.ListImages();        
     }
-    */
 }
