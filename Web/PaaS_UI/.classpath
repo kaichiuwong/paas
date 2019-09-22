@@ -13,10 +13,18 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/jsch-0.1.55.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/json-simple-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/openstack4j-3.1.0-withdeps.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/taglibs-standard-impl-1.2.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/Cloud.jar"/>
-	<classpathentry kind="output" path="build/classes"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/commons-codec-1.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/commons-logging-1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/fluent-hc-4.5.10.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/httpclient-4.5.10.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/httpclient-cache-4.5.10.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/httpclient-osgi-4.5.10.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/httpclient-win-4.5.10.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/httpcore-4.4.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/httpmime-4.5.10.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/jna-4.5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/kcwong3/Documents/paas/Web/PaaS_UI/jna-platform-4.5.2.jar"/>
+	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>

@@ -1,11 +1,17 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
     pageEncoding="utf-8"%>
-<%@ page import="org.openstack4j.model.compute.Server"%>
-<%@ page import="com.kit418.kernel.CloudControl" %>
-<%@ page import="java.util.List" %>
+<%@ page import="com.kit418.web.WebConnector" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="org.json.simple.JSONArray" %>
+<%@ page import="org.json.simple.JSONObject" %>
+<%@ page import="org.json.simple.parser.*" %>
+<%@ page import="java.util.Iterator" %>
 <%
-CloudControl openstack = new CloudControl();
-List<?> svrlist = openstack.ListServers();
+WebConnector httpclient = new WebConnector();
+Map<String,String> result = httpclient.sendGet("http://localhost:8080/PaaS_WS/InstanceControl");
+System.out.println(result.get("ResponseMsg"));
+JSONObject jo = (JSONObject) new JSONParser().parse(result.get("ResponseMsg"));
+JSONArray ja = (JSONArray) jo.get("ServerList"); 
 %>
 <%@include  file="header.html" %>    
 <!-- body here -->
@@ -26,18 +32,19 @@ List<?> svrlist = openstack.ListServers();
             </tr>
         </thead>
         <tbody>
-        	<% for (Object svr : svrlist) { 
-        	   Server instance = (Server) svr;
-        	 %>
-	              <tr>
-	                <td><% out.print(instance.getId()); %></td>
-	                <td><% out.print(instance.getName()); %></td>
-	                <td><% out.print(instance.getAccessIPv4()); %></td>
-	                <td><% out.print(instance.getStatus()); %></td>
-	                <% if (instance.getName().contains("master")) { %>
+        <%
+        for (int i = 0; i < ja.size(); i++) {
+            JSONObject instance = (JSONObject) ja.get(i);
+        %>
+        	<tr>
+	                <td><% out.print(instance.get("id")); %></td>
+	                <td><% out.print(instance.get("name")); %></td>
+	                <td><% out.print(instance.get("ipv4")); %></td>
+	                <td><% out.print(instance.get("status")); %></td>
+	                <% if (instance.get("name").toString().contains("master")) { %>
 	                	<td></td>
 	                <% } else { %>
-		                <% if (instance.getStatus().toString().equals("ACTIVE"))  { %>
+		                <% if (instance.get("status").toString().equals("ACTIVE"))  { %>
 		                	<td><a href="#" class="btn btn-danger" role="button">Stop Server</a></td>
 		                <% } else { %>
 		                	<td><a href="#" class="btn btn-success" role="button">Start Server</a></td>

@@ -72,6 +72,7 @@ public class InstanceControl extends HttpServlet {
 	private String listServer() {
 		String result = "";
 		List<?> svrlist = openstack.ListServers();
+		JSONObject jo = new JSONObject();
 
 	    JSONArray svrresult = new JSONArray();
 	    
@@ -81,11 +82,12 @@ public class InstanceControl extends HttpServlet {
 	    	svrObject.put("id", instance.getId());
 	    	svrObject.put("name", instance.getName());
 	    	svrObject.put("ipv4", instance.getAccessIPv4());
-	    	svrObject.put("status", instance.getStatus());
+	    	svrObject.put("status", instance.getStatus().toString());
 	    	svrresult.add(svrObject);
 	    }
 	    
-	    result = svrresult.toJSONString();
+	    jo.put("ServerList", svrresult);
+	    result = jo.toJSONString();
 		return result;
 		
 	}
