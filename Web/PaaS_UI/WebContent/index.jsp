@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
     pageEncoding="utf-8"%>
 <%@ page import="org.openstack4j.model.compute.Server"%>
-<%@ page import="com.kit418.CloudControl" %>
+<%@ page import="com.kit418.kernel.CloudControl" %>
 <%@ page import="java.util.List" %>
 <%
 CloudControl openstack = new CloudControl();
