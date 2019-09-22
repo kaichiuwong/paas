@@ -8,7 +8,7 @@
 <%@ page import="java.util.Iterator" %>
 <%
 WebConnector httpclient = new WebConnector();
-Map<String,String> result = httpclient.sendGet("http://localhost:8080/PaaS_WS/InstanceControl");
+Map<String,String> result = httpclient.sendGet("http://144.6.227.55:8080/ws/InstanceControl");
 System.out.println(result.get("ResponseMsg"));
 JSONObject jo = (JSONObject) new JSONParser().parse(result.get("ResponseMsg"));
 JSONArray ja = (JSONArray) jo.get("ServerList"); 
