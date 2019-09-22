@@ -26,13 +26,13 @@ public class InstanceControl extends HttpServlet {
      * Default constructor. 
      */
     public InstanceControl() {
-    	openstack = new CloudControl();
     }
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		openstack = new CloudControl();
 		String action = request.getParameter("action");
 		String svrid = request.getParameter("id");
 		String outputJSON = "";
@@ -52,7 +52,6 @@ public class InstanceControl extends HttpServlet {
 				outputJSON = listServer();
 				break;
 		}
-    
 		response.setContentType("application/json");
 		response.getWriter().append(outputJSON);
 	}

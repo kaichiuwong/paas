@@ -9,11 +9,21 @@
 <%
 WebConnector httpclient = new WebConnector();
 Map<String,String> result = httpclient.sendGet("http://144.6.227.55:8080/ws/InstanceControl");
-System.out.println(result.get("ResponseMsg"));
-JSONObject jo = (JSONObject) new JSONParser().parse(result.get("ResponseMsg"));
-JSONArray ja = (JSONArray) jo.get("ServerList"); 
 %>
 <%@include  file="header.html" %>    
+
+<%
+if (!result.get("ResponseCode").equals("200")) {
+%>
+<h2>Error Occur</h2>
+<p><% out.print(result.get("ResponseCode") + ": " + result.get("ResponseMsg")); %></p>
+<%
+}
+else 
+{
+	JSONObject jo = (JSONObject) new JSONParser().parse(result.get("ResponseMsg"));
+	JSONArray ja = (JSONArray) jo.get("ServerList"); 
+%>
 <!-- body here -->
 <div class="container-flui">
   <div class="card mt-5">
@@ -51,11 +61,12 @@ JSONArray ja = (JSONArray) jo.get("ServerList");
 		                <% } %>
 		            <% } %>
 	              </tr>
-			<%} %>
+			<% } %>
         </tbody>
       </table>
     </div>
   </div>
 </div>
+<%} %>
 <!-- footer here -->
 <%@include  file="footer.html" %>
