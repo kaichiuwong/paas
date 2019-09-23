@@ -283,15 +283,13 @@ public class CloudControl {
     /*
      * Operations
      */
-    public void transferFile(String ServerName, String localFile) {
+    public void uploadFile(String ServerName, String localFile, String remoteFolder, String remoteFile) {
     	String ipaddress = getIP(ServerName);
-    	String remoteFolder = REMOTE_FOLDER_PATH;
-    	String remoteFile = REMOTE_FILE_NAME;
     	
     	if (ipaddress != null) {
     		waitReachable(ipaddress);
     		waitSFTPService(ipaddress);
-    		System.out.printf("Starting transfer file to %s ...\n", ServerName);
+    		System.out.printf("Starting upload file to %s ...\n", ServerName);
     		try {
 	    		JSch jsch=new JSch();
 	    		Properties config = new Properties(); 
@@ -311,7 +309,38 @@ public class CloudControl {
 				listSftpDirectory(sftpChannel, remoteFolder);
 				sftpChannel.disconnect();
 				session.disconnect();
-				System.out.printf("Transfer file complete.\n");
+				System.out.printf("Upload file complete.\n");
+			}
+    		catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    	}
+    }
+    
+    public void downloadFile(String ServerName, String remoteFile, String localFolder) {
+    	String ipaddress = getIP(ServerName);
+    	
+    	if (ipaddress != null) {
+    		waitReachable(ipaddress);
+    		waitSFTPService(ipaddress);
+    		System.out.printf("Starting download file from %s ...\n", ServerName);
+    		try {
+	    		JSch jsch=new JSch();
+	    		Properties config = new Properties(); 
+	    		config.put("StrictHostKeyChecking", "no");
+	    		
+	    		jsch.addIdentity(PRIVATE_KEY_FILE_PATH,PRIVATE_KEY_PASSPHRASE);
+	    		Session session=jsch.getSession(INSTANCE_OS_USERNAME, ipaddress, 22);
+	    		session.setConfig(config);
+	    		session.setTimeout(30000);
+				session.connect();
+				
+				ChannelSftp sftpChannel = (ChannelSftp) session.openChannel("sftp");
+				sftpChannel.connect();
+				sftpChannel.get(remoteFile, localFolder);
+				sftpChannel.disconnect();
+				session.disconnect();
+				System.out.printf("Download file complete.\n");
 			}
     		catch (Exception e) {
     			e.printStackTrace();
@@ -389,19 +418,22 @@ public class CloudControl {
 			e.printStackTrace();
 		}
     }
-
+    
+    private void initServer(String serverName) {
+        uploadFile(serverName, LOCAL_FILE_PATH, REMOTE_FOLDER_PATH, REMOTE_FILE_NAME);
+        executeCommand(serverName, REMOTE_FOLDER_PATH+REMOTE_FILE_NAME);    	
+    }
     
     /*
-     * main
+     * Console Driver to test the program
      */
     public static void main(String[] args) {
         CloudControl openstack = new CloudControl();
         
         System.out.println(openstack.ListServers());
         //System.out.println(openstack.getIP(INSTANCE_NAME));
-        //openstack.createServer(INSTANCE_NAME);
-        //openstack.transferFile(INSTANCE_NAME, LOCAL_FILE_PATH);
-        //openstack.executeCommand(INSTANCE_NAME, REMOTE_FOLDER_PATH+REMOTE_FILE_NAME);
+        openstack.createServer(INSTANCE_NAME);
+        openstack.initServer(INSTANCE_NAME);
         
         //openstack.ListFlavors();
         //openstack.ListImages();        
