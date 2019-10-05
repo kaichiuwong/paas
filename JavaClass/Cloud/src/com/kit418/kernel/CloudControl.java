@@ -481,7 +481,7 @@ public class CloudControl {
         }
     }
     
-    //@TODO: will further enhance to be thread
+    //@TODO: will further enhance to be thread programming
     public void runJar(String JarFilePath, String workNodeName) throws IOException {
     	String remoteJarPath = uploadFile(workNodeName, JarFilePath);
     	executeCommand(workNodeName,String.format("java -jar %s", remoteJarPath));
