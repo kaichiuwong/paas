@@ -1,40 +1,32 @@
 package com.kit418.kernel;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
 
-public class Master extends Thread {
-	
-	private static int portNum ;
-	private static Map<String, Worker> workerList;
-	private static Queue<String> requestQueue;
-	private static ServerSocket svrSocket;
-	
+public class Master {
+	private static int portNum;
 	public Master(int port) {
-		try {
-			portNum = port;
-			workerList = new HashMap<String, Worker>();
-			svrSocket = new ServerSocket(portNum);
-			requestQueue = new LinkedList<String>();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
+		portNum = 2036;
 	}
 	
-	public void run() {
+	public static void main(String[] args) throws IOException {
+		ServerSocket svrSocket = new ServerSocket(portNum);
 		while (true) {
-			Socket s = null;
-			
+			Socket s = null ;
+			try {
+				s = svrSocket.accept();
+				DataInputStream dis = new DataInputStream(s.getInputStream());
+				DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+				
+				Thread t = new WorkerHandler(s, dis, dos);
+				t.start();
+			}
+			catch (Exception ex) {
+				s.close();
+			}
 		}
-	}
-	
-	public void runProgram() {
-		
 	}
 }
