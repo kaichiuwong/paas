@@ -12,8 +12,13 @@ public class Master {
 		portNum = 2036;
 	}
 	
+	public void CreateWorker() {
+		Worker obj = new Worker();
+		obj.run();
+	}
+	
 	public static void main(String[] args) throws IOException {
-		ServerSocket svrSocket = new ServerSocket(portNum);
+		ServerSocket svrSocket = new ServerSocket(2036);
 		while (true) {
 			Socket s = null ;
 			try {
@@ -25,6 +30,7 @@ public class Master {
 				t.start();
 			}
 			catch (Exception ex) {
+				ex.printStackTrace();
 				s.close();
 			}
 		}

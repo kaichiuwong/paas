@@ -2,6 +2,7 @@ package com.kit418.kernel;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 
 public class WorkerHandler extends Thread {
@@ -16,6 +17,16 @@ public class WorkerHandler extends Thread {
 	
 	public void run() {
 		while (true) {
+			try {
+				String cmdInput = dis.readUTF();
+				switch (cmdInput) {
+					case "EXIT" : break;
+					default: System.out.println(cmdInput); break;
+				}
+			}
+			catch (IOException ex) {
+				
+			}
 			break;
 		}
 		try {
