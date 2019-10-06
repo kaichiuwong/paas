@@ -16,11 +16,13 @@ public class WorkerHandler extends Thread {
 	private final Socket s;
 	private String workerID ; 
 	private String outputPath ;
+	private Map<String, Thread> workerList;
 	
-	public WorkerHandler(Socket s, DataInputStream dis, DataOutputStream dos) {
+	public WorkerHandler(Socket s, DataInputStream dis, DataOutputStream dos, Map<String, Thread>  wl) {
 		this.s = s;
 		this.dis = dis;
 		this.dos = dos;
+		this.workerList = wl;
 	}
 	
 	public String getworkerID() {
@@ -41,6 +43,9 @@ public class WorkerHandler extends Thread {
 		try {
 			workerID = dis.readUTF();
 			outputPath = String.format("/home/ubuntu/output/%s.txt", workerID);
+			synchronized (workerList) {
+				workerList.put(workerID, this);
+			}
 		}
 		catch (IOException ex) {
 			

@@ -1,13 +1,18 @@
 package com.kit418.kernel;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
@@ -511,7 +516,8 @@ public class CloudControl {
     /*
      * Console Driver to test the program
      */
-    public static void main(String[] args) {
+    
+    private static void testWorkerExecutePy() {
         CloudControl openstack = new CloudControl();
         try {
         	openstack.runPython("/home/ubuntu/uploads/Helloworld.py", CLIENT_INSTANCE_NAME);
@@ -519,5 +525,95 @@ public class CloudControl {
         catch (Exception ex) {
         	
         }
+    }
+    
+    private static void testWorkerExecuteJar() {
+        CloudControl openstack = new CloudControl();
+        try {
+        	openstack.runJar("/home/ubuntu/uploads/Helloworld.jar", CLIENT_INSTANCE_NAME);
+        }
+        catch (Exception ex) {
+        	
+        }
+    }
+    
+    private static void testStartMaster (Thread obj) {
+    	obj.start();
+    }
+    
+    private static void testPrintWorkerList(Thread obj) {
+		Master m = (Master) obj;
+		int i = 0;
+		System.out.println(String.format("Total: %d workers stored in this Master.", m.getWorkerList().keySet().size()));
+    	for( String key: m.getWorkerList().keySet()) {
+    		System.out.println(String.format("%d) %s", ++i,key));
+    	}
+    }
+    
+    private static void testProgramOutput(Thread obj) {
+    	System.out.println("Please input WORKER ID: ");
+    	testPrintWorkerList(obj);
+    	System.out.print("WORKERID> ");
+    	Scanner snr = new Scanner(System.in);
+    	String input = snr.next();
+    	SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    	Master m = (Master) obj;
+    	if (m.getWorkerList().containsKey(input)) {
+    		String filepath = String.format("/home/ubuntu/output/%s.txt", input);
+			File file = new File(filepath); 
+			BufferedReader br;
+			try {
+				br = new BufferedReader(new FileReader(file));
+				String st; 
+				System.out.println("Output file location: " + filepath);
+				System.out.println("Finish time: " + sdf.format(file.lastModified()));
+				System.out.println("Program output for worker " + input);
+				System.out.println("********** START OUTPUT ********************");
+				while ((st = br.readLine()) != null)  {
+				    System.out.println(st); 
+				}
+				System.out.println("*********** END OUTPUT ********************");
+				System.out.println();
+			} catch (FileNotFoundException e) {
+				System.out.println("[ERROR] Output file not found from master for Worker ID: " + input);
+			} catch (IOException e) {
+
+			} 
+    	}
+    	else {
+    		System.out.println("[ERROR] Worker ID not found from master.");
+    	}
+    }
+    
+    private static void PrintCloudMenu() {
+    	System.out.println("\n===================================================");
+    	System.out.println("Please Input Testing Option: ");
+    	System.out.println("===================================================");
+    	System.out.println("M : Start Master Listener ");
+    	System.out.println("P : Execute a Python File in Worker ");
+    	System.out.println("J : Execute a Jar File in Worker ");
+    	System.out.println("L : Print Worker List in Master ");
+    	System.out.println("O : Get Program Output ");
+    	System.out.println("Q : Quit this Testing Program ");    	
+    	System.out.println("===================================================");
+    	System.out.print("> ");
+    }
+    public static void main(String[] args) {
+    	Scanner snr = new Scanner(System.in);
+    	Thread obj = new Master();
+    	
+    	while (true) {
+    		PrintCloudMenu();
+    		String input = snr.next();
+    		switch (input.toUpperCase()) {
+    			case "J": testWorkerExecuteJar(); break;
+    			case "L": testPrintWorkerList(obj); break;
+    			case "M": testStartMaster(obj); break;
+    			case "O": testProgramOutput(obj); break;
+    			case "P": testWorkerExecutePy(); break;
+    			case "Q": System.exit(0); break;
+    			default: System.out.println("[ERROR] Wrong Input! Please input again."); break;
+    		}
+    	}
     }
 }
