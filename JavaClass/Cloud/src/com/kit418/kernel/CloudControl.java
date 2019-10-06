@@ -313,11 +313,11 @@ public class CloudControl {
     /*
      * Operations
      */
-    private String uploadFile(String ServerName, String localFile) throws IOException {
-    	String ipaddress = getIP(ServerName);
-    	String defaultRemoteFolder = REMOTE_FOLDER_PATH + "uploads/";
+    
+    private String uploadFile(String ServerName, String localFile, String remoteFolder) throws IOException {
+    	String ipaddress = getIP(ServerName);    	
     	String filename = Paths.get(localFile).getFileName().toString();
-    	String remoteFile = defaultRemoteFolder + filename;
+    	String remoteFile = remoteFolder + filename;
     	File privateKeyFile = new File(PRIVATE_KEY_FILE_PATH);
     	if (!privateKeyFile.exists()) {
     		throw new IOException("Private key file not found: " + privateKeyFile.getAbsolutePath());
@@ -340,7 +340,7 @@ public class CloudControl {
 				
 				ChannelSftp sftpChannel = (ChannelSftp) session.openChannel("sftp");
 				sftpChannel.connect();
-				sftpChannel.cd(defaultRemoteFolder);
+				sftpChannel.cd(remoteFolder);
 				sftpChannel.put(localFile, remoteFile, ChannelSftp.OVERWRITE);
 				sftpChannel.chmod(Integer.parseInt("777",8), remoteFile);
 				//listSftpDirectory(sftpChannel, defaultRemoteFolder);
@@ -355,6 +355,10 @@ public class CloudControl {
     		return remoteFile;
     	}
     	return null;
+    }
+    private String uploadFile(String ServerName, String localFile) throws IOException {
+    	String defaultRemoteFolder = REMOTE_FOLDER_PATH + "uploads/";
+    	return uploadFile(ServerName, localFile, defaultRemoteFolder);
     }
     
     private void downloadFile(String ServerName, String remoteFile, String localFolder) throws IOException {
@@ -468,6 +472,8 @@ public class CloudControl {
     	String command = String.format("echo '#!/bin/bash' > %s ;", remotePath);
     	command += String.format("echo 'mkdir /home/ubuntu/uploads' >> %s ;", remotePath);
     	command += String.format("echo 'chmod 777 /home/ubuntu/uploads' >> %s ;", remotePath);
+    	command += String.format("echo 'mkdir -p /home/ubuntu/bin/com/kit418/kernel' >> %s ;", remotePath);
+    	command += String.format("echo 'chmod -R 777 /home/ubuntu/bin' >> %s ;", remotePath);
     	command += String.format("echo 'sudo apt-get update' >> %s ;", remotePath);
     	command += String.format("echo 'sudo apt install default-jre -y' >> %s ;", remotePath);
     	command += String.format("echo 'sudo apt install default-jdk -y' >> %s ;", remotePath);
@@ -476,10 +482,11 @@ public class CloudControl {
     	executeCommand(serverName,command);
     }
     
-    private void initServer(String serverName) {
+    private void initServer(String serverName) {    	
         try {
-	    	createinitfile(serverName, REMOTE_FOLDER_PATH+REMOTE_INIT_FILE_NAME);
-	        executeCommand(serverName, REMOTE_FOLDER_PATH+REMOTE_INIT_FILE_NAME);
+        	createinitfile(serverName, REMOTE_FOLDER_PATH+REMOTE_INIT_FILE_NAME);
+        	executeCommand(serverName, REMOTE_FOLDER_PATH+REMOTE_INIT_FILE_NAME);
+        	uploadFile(serverName, "/home/ubuntu/bin/com/kit418/kernel/Worker.class","/home/ubuntu/bin/com/kit418/kernel/");
         }
         catch (Exception e) {
         	System.out.println("Exception occur: " + e.getMessage());
@@ -516,6 +523,10 @@ public class CloudControl {
     /*
      * Console Driver to test the program
      */
+    public static void testInitServer(String serverName) {
+    	CloudControl openstack = new CloudControl();
+    	openstack.createWorkerNode(serverName);
+    }
     
     private static void testWorkerExecutePy() {
         CloudControl openstack = new CloudControl();
@@ -589,6 +600,7 @@ public class CloudControl {
     	System.out.println("\n===================================================");
     	System.out.println("Please Input Testing Option: ");
     	System.out.println("===================================================");
+    	System.out.println("I : Create New Worker ");
     	System.out.println("M : Start Master Listener ");
     	System.out.println("P : Execute a Python File in Worker ");
     	System.out.println("J : Execute a Jar File in Worker ");
@@ -606,6 +618,7 @@ public class CloudControl {
     		PrintCloudMenu();
     		String input = snr.next();
     		switch (input.toUpperCase()) {
+    			case "I": testInitServer(CLIENT_INSTANCE_NAME); break;
     			case "J": testWorkerExecuteJar(); break;
     			case "L": testPrintWorkerList(obj); break;
     			case "M": testStartMaster(obj); break;
