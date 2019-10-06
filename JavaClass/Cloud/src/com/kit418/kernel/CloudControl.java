@@ -57,6 +57,7 @@ public class CloudControl {
     private static final String REMOTE_INIT_FILE_NAME = "init.sh" ;
     
     private static final int MASTER_WORKER_PORT = 12345;
+    private static final String MASTER_ADDRESS = "144.6.227.55";
     
     OSClientV3 os = null;
     public CloudControl() {
@@ -495,29 +496,45 @@ public class CloudControl {
     
     //@TODO: will further enhance to be thread programming
     public void runJar(String JarFilePath, String workNodeName) throws IOException {
-    	String remoteJarPath = uploadFile(workNodeName, JarFilePath);
-    	Worker wrk = new Worker("144.6.227.55", 12345, remoteJarPath, "java");
-    	wrk.start();
+    	String remoteJarPath = uploadFile(workNodeName, JarFilePath);    	
+    	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
+    								MASTER_ADDRESS,
+    								MASTER_WORKER_PORT,
+    								remoteJarPath,
+    								"java");
+    	executeCommand(CLIENT_INSTANCE_NAME,cmd);
     }
     
     public void runPython(String PyFilePath, String workNodeName) throws IOException {
     	String remotePyPath = uploadFile(workNodeName, PyFilePath);
-    	Worker wrk = new Worker("144.6.227.55", 12345, remotePyPath, "python");
-    	wrk.start();
+    	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
+				MASTER_ADDRESS,
+				MASTER_WORKER_PORT,
+				remotePyPath,
+				"python");
+    	executeCommand(CLIENT_INSTANCE_NAME,cmd);
     }
     
     public void runJar(String JarFilePath, String inputFilePath, String workNodeName) throws IOException {
     	String remoteJarPath = uploadFile(workNodeName, JarFilePath);
     	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath);
-    	Worker wrk = new Worker("144.6.227.55", 12345, remoteJarPath + " " + remoteInputFilePath, "java");
-    	wrk.start();
+    	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
+				MASTER_ADDRESS,
+				MASTER_WORKER_PORT,
+				remoteJarPath + " " + remoteInputFilePath,
+				"python");
+    	executeCommand(CLIENT_INSTANCE_NAME,cmd);
     }
     
     public void runPython(String PyFilePath, String inputFilePath, String workNodeName) throws IOException {
     	String remotePyPath = uploadFile(workNodeName, PyFilePath);
     	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath);
-    	Worker wrk = new Worker("144.6.227.55", 12345, remotePyPath + " " + remoteInputFilePath, "python");
-    	wrk.start();
+    	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
+				MASTER_ADDRESS,
+				MASTER_WORKER_PORT,
+				remotePyPath + " " + remoteInputFilePath,
+				"python");
+    	executeCommand(CLIENT_INSTANCE_NAME,cmd);
     }
     
     /*
