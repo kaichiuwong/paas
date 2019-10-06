@@ -38,7 +38,7 @@ public class CloudControl {
     private static final String CLOUD_PROJECT_ID="b32a1d6f70c44be880b86f8f2c09773d";
 
     //For Instance connection
-    private static final String PRIVATE_KEY_FILE_PATH="kaichiuwong.ppk";
+    private static final String PRIVATE_KEY_FILE_PATH="/home/ubuntu/kaichiuwong.ppk";
     private static final String PRIVATE_KEY_PASSPHRASE="46709394";
     
     //For Instance Creation
@@ -310,7 +310,7 @@ public class CloudControl {
      */
     private String uploadFile(String ServerName, String localFile) throws IOException {
     	String ipaddress = getIP(ServerName);
-    	String defaultRemoteFolder = REMOTE_FOLDER_PATH + "uploads";
+    	String defaultRemoteFolder = REMOTE_FOLDER_PATH + "uploads/";
     	String filename = Paths.get(localFile).getFileName().toString();
     	String remoteFile = defaultRemoteFolder + filename;
     	File privateKeyFile = new File(PRIVATE_KEY_FILE_PATH);
@@ -484,24 +484,28 @@ public class CloudControl {
     //@TODO: will further enhance to be thread programming
     public void runJar(String JarFilePath, String workNodeName) throws IOException {
     	String remoteJarPath = uploadFile(workNodeName, JarFilePath);
-    	executeCommand(workNodeName,String.format("java -jar %s", remoteJarPath));
+    	Worker wrk = new Worker("144.6.227.55", 12345, remoteJarPath, "java");
+    	wrk.start();
     }
     
     public void runPython(String PyFilePath, String workNodeName) throws IOException {
     	String remotePyPath = uploadFile(workNodeName, PyFilePath);
-    	executeCommand(workNodeName,String.format("python3 %s", remotePyPath));
+    	Worker wrk = new Worker("144.6.227.55", 12345, remotePyPath, "python");
+    	wrk.start();
     }
     
     public void runJar(String JarFilePath, String inputFilePath, String workNodeName) throws IOException {
     	String remoteJarPath = uploadFile(workNodeName, JarFilePath);
     	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath);
-    	executeCommand(workNodeName,String.format("java -jar %s %s", remoteJarPath, remoteInputFilePath));
+    	Worker wrk = new Worker("144.6.227.55", 12345, remoteJarPath + " " + remoteInputFilePath, "java");
+    	wrk.start();
     }
     
     public void runPython(String PyFilePath, String inputFilePath, String workNodeName) throws IOException {
     	String remotePyPath = uploadFile(workNodeName, PyFilePath);
     	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath);
-    	executeCommand(workNodeName,String.format("python3 %s %s", remotePyPath, remoteInputFilePath));
+    	Worker wrk = new Worker("144.6.227.55", 12345, remotePyPath + " " + remoteInputFilePath, "python");
+    	wrk.start();
     }
     
     /*
@@ -509,11 +513,10 @@ public class CloudControl {
      */
     public static void main(String[] args) {
         CloudControl openstack = new CloudControl();
-        //openstack.createWorkerNode(CLIENT_INSTANCE_NAME);
         try {
-        	openstack.runPython("Helloworld.py", CLIENT_INSTANCE_NAME);
+        	openstack.runPython("/home/ubuntu/uploads/Helloworld.py", CLIENT_INSTANCE_NAME);
         }
-        catch (IOException ex) {
+        catch (Exception ex) {
         	
         }
     }

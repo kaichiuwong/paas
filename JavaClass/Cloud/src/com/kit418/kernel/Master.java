@@ -2,14 +2,21 @@ package com.kit418.kernel;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Master {
+public class Master extends Thread {
 	private static int portNum;
+	private ServerSocket svrSocket;
+	
+	public Master() {
+		portNum = 12345;
+	}
+	
 	public Master(int port) {
-		portNum = 2036;
+		portNum = port;
 	}
 	
 	public void CreateWorker() {
@@ -17,8 +24,10 @@ public class Master {
 		obj.run();
 	}
 	
-	public static void main(String[] args) throws IOException {
-		ServerSocket svrSocket = new ServerSocket(2036);
+	public void OpenMasterPort() {
+		try {
+		svrSocket = new ServerSocket(portNum);
+		System.out.println("Master is listening port: " + portNum);
 		while (true) {
 			Socket s = null ;
 			try {
@@ -34,5 +43,24 @@ public class Master {
 				s.close();
 			}
 		}
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public void run() {
+		OpenMasterPort();
+	}
+	
+	public static void main(String[] args)  {
+		Master obj ;
+		if (args.length >= 1) {
+			obj = new Master(Integer.parseInt(args[0]));
+		}
+		else {
+			obj = new Master();
+		}
+		obj.OpenMasterPort();
 	}
 }
