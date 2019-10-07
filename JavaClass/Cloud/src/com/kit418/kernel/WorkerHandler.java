@@ -8,7 +8,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.io.*; 
+import java.util.*; 
 
 public class WorkerHandler extends Thread {
 	private final DataInputStream dis;
@@ -16,11 +19,12 @@ public class WorkerHandler extends Thread {
 	private final Socket s;
 	private String workerID ; 
 	private String outputPath ;
-	
-	public WorkerHandler(Socket s, DataInputStream dis, DataOutputStream dos) {
+	private List<WorkerServer> serverList;
+	public WorkerHandler(Socket s, DataInputStream dis, DataOutputStream dos, List<WorkerServer> _serverList) {
 		this.s = s;
 		this.dis = dis;
 		this.dos = dos;
+		this.serverList = _serverList;
 	}
 	
 	public String getworkerID() {
@@ -37,6 +41,56 @@ public class WorkerHandler extends Thread {
            }
 	}
 	
+	private String generatePassCode() {
+		Random gen= new Random();
+		int result = (gen.nextInt(9000) + 1000);
+		return result+"";
+	}
+	
+	private WorkerServer StartWorker(String FilePath, String  Type) {
+		WorkerServer resultWorker = null;
+		try {
+		
+			WorkerServer selectedServerWorker = this.serverList.stream().filter(x ->x.getIsBusy() == false).findFirst().get();
+			if(selectedServerWorker == null) {
+				dos.writeUTF("All the worker is busy at this moment. Please try again later");
+				
+			}else {
+				resultWorker = selectedServerWorker;
+				resultWorker.setPassCode(this.generatePassCode());
+				resultWorker.setBusy(true);
+				
+				//String remoteFilePath = uploadFile(selectedWorker.getServer().getInstanceName(), FilePath);
+				String remoteFilePath="";
+		    	Worker wrk = new Worker(resultWorker.getServer().getAccessIPv4(), 12345, remoteFilePath, Type);
+		    	wrk.start();
+		    	resultWorker.setWorkId(wrk.getWorkerID());
+		    	RemoveWorker(selectedServerWorker);
+		    	AddWorker(resultWorker);
+		    	
+			}
+		}catch(Exception e) {
+			
+		}
+		return resultWorker;
+	}
+	
+	private void RemoveWorker(WorkerServer worker) {
+		synchronized(this.serverList) {
+			this.serverList.remove(worker);
+		}
+	}
+	
+	private void AddWorker(WorkerServer worker) {
+		synchronized(this.serverList) {
+			this.serverList.add(worker);
+		}
+	}
+	
+	private String ExecuteJava(){
+		return"";
+	}
+	
 	public void run() {
 		try {
 			workerID = dis.readUTF();
@@ -50,7 +104,19 @@ public class WorkerHandler extends Thread {
 				try {
 					String cmdOutput = dis.readUTF();
 					switch (cmdOutput) {
-						case "EXIT" : break;
+						case "JAVA" : break;
+						case "PYTHON" : {
+							
+						}break;
+						case "OUTPUT": {
+							
+						}break;
+						case "ENQUIRE": break;
+						case "CANCEL": break;
+						case "BILL": break;
+						case "SUCCESS": {
+							saveOutput(cmdOutput);
+						}break;
 						default: saveOutput(cmdOutput); break;
 					}
 				}
