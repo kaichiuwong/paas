@@ -57,14 +57,17 @@ public class Worker extends Thread{
 	}
 	
 	public static void main(String[] args) throws IOException {
-		Worker obj ;
-		if (args.length >= 2) {
-			obj = new Worker(args[0], Integer.parseInt(args[1]));
+		if (args.length >= 4) {
+			Worker obj ;
+			obj = new Worker(args[0], Integer.parseInt(args[1]), args[2], args[3]);
+			obj.run();
 		}
 		else {
-			obj = new Worker();
+			System.out.println("[ERROR] Please specify file path and program type to run worker.");
+			System.out.println("Usage: java com.kit418.kernel.Worker <MasterIP> <MasterPort> <ProgramPath> <ProgramType>");
+			System.out.println("Example: java com.kit418.kernel.Worker 144.6.227.55 12345 /home/ubuntu/uploads/Helloworld.jar java");
 		}
-		obj.run();
+		
 	}
 	
 	public String getWorkerID() {

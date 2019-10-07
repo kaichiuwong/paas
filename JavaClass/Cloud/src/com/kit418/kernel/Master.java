@@ -10,24 +10,21 @@ import java.util.Map;
 public class Master extends Thread {
 	private static int portNum;
 	private ServerSocket svrSocket;
-	
+	private Map<String, Thread> workerList;
 	public Master() {
 		portNum = 12345;
+		workerList = new HashMap<String, Thread>();
 	}
 	
 	public Master(int port) {
 		portNum = port;
-	}
-	
-	public void CreateWorker() {
-		Worker obj = new Worker();
-		obj.run();
+		workerList = new HashMap<String, Thread>();
 	}
 	
 	public void OpenMasterPort() {
 		try {
 		svrSocket = new ServerSocket(portNum);
-		System.out.println("Master is listening port: " + portNum);
+		System.out.println("\nMaster is listening port: " + portNum);
 		while (true) {
 			Socket s = null ;
 			try {
@@ -35,7 +32,7 @@ public class Master extends Thread {
 				DataInputStream dis = new DataInputStream(s.getInputStream());
 				DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 				
-				Thread t = new WorkerHandler(s, dis, dos);
+				Thread t = new WorkerHandler(s, dis, dos, workerList);		
 				t.start();
 			}
 			catch (Exception ex) {
@@ -47,6 +44,10 @@ public class Master extends Thread {
 		catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+	
+	public Map<String, Thread> getWorkerList() {
+		return workerList;
 	}
 	
 	public void run() {

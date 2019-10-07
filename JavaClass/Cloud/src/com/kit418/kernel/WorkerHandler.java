@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.io.*; 
 import java.util.*; 
@@ -20,11 +19,14 @@ public class WorkerHandler extends Thread {
 	private String workerID ; 
 	private String outputPath ;
 	private List<WorkerServer> serverList;
-	public WorkerHandler(Socket s, DataInputStream dis, DataOutputStream dos, List<WorkerServer> _serverList) {
+	private Map<String, Thread> workerList;
+	
+	public WorkerHandler(Socket s, DataInputStream dis, DataOutputStream dos, Map<String, Thread>  wl) {
+
 		this.s = s;
 		this.dis = dis;
 		this.dos = dos;
-		this.serverList = _serverList;
+		this.workerList = wl;
 	}
 	
 	public String getworkerID() {
@@ -95,6 +97,9 @@ public class WorkerHandler extends Thread {
 		try {
 			workerID = dis.readUTF();
 			outputPath = String.format("/home/ubuntu/output/%s.txt", workerID);
+			synchronized (workerList) {
+				workerList.put(workerID, this);
+			}
 		}
 		catch (IOException ex) {
 			
