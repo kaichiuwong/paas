@@ -614,18 +614,20 @@ public class CloudControl {
     }
     
     private static void PrintCloudMenu() {
-    	System.out.println("\n===================================================");
-    	System.out.println("Please Input Testing Option: ");
-    	System.out.println("===================================================");
-    	System.out.println("I : Create New Worker ");
-    	System.out.println("M : Start Master Listener ");
-    	System.out.println("P : Execute a Python File in Worker ");
-    	System.out.println("J : Execute a Jar File in Worker ");
-    	System.out.println("L : Print Worker List in Master ");
-    	System.out.println("O : Get Program Output ");
-    	System.out.println("Q : Quit this Testing Program ");    	
-    	System.out.println("===================================================");
-    	System.out.print("> ");
+    	synchronized (System.out) {
+	    	System.out.println("\n===================================================");
+	    	System.out.println("Please Input Testing Option: ");
+	    	System.out.println("===================================================");
+	    	System.out.println("I : Create New Worker ");
+	    	System.out.println("M : Start Master Listener ");
+	    	System.out.println("P : Execute a Python File in Worker ");
+	    	System.out.println("J : Execute a Jar File in Worker ");
+	    	System.out.println("L : Print Worker List in Master ");
+	    	System.out.println("O : Get Program Output ");
+	    	System.out.println("Q : Quit this Testing Program ");    	
+	    	System.out.println("===================================================");
+	    	System.out.print("> ");
+    	}
     }
     public static void main(String[] args) {
     	Scanner snr = new Scanner(System.in);
