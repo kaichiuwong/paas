@@ -8,15 +8,11 @@
 			<attribute name="owner.project.facets" value="jst.web"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_201">
-		<attributes>
-			<attribute name="owner.project.facets" value="java"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/WebService/PaaS_WS/Cloud.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/WebService/PaaS_WS/jsch-0.1.55.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/WebService/PaaS_WS/json-simple-1.1.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/WebService/PaaS_WS/openstack4j-3.1.0-withdeps.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kcwong3/Documents/paas/WebService/PaaS_WS/taglibs-standard-impl-1.2.5.jar"/>
+	<classpathentry kind="lib" path="jsch-0.1.55.jar"/>
+	<classpathentry kind="lib" path="json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="openstack4j-3.1.0-withdeps.jar"/>
+	<classpathentry kind="lib" path="taglibs-standard-impl-1.2.5.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="Cloud.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>

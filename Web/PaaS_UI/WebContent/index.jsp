@@ -8,7 +8,7 @@
 <%@ page import="java.util.Iterator" %>
 <%
 WebConnector httpclient = new WebConnector();
-Map<String,String> result = httpclient.sendGet("http://144.6.227.55:8080/ws/InstanceControl");
+Map<String,String> result = httpclient.sendGet("http://localhost:8090/PaaS_WS/InstanceControl");
 %>
 <%@include  file="header.html" %>    
 

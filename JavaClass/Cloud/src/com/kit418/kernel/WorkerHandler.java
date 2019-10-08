@@ -109,19 +109,7 @@ public class WorkerHandler extends Thread {
 				try {
 					String cmdOutput = dis.readUTF();
 					switch (cmdOutput) {
-						case "JAVA" : break;
-						case "PYTHON" : {
-							
-						}break;
-						case "OUTPUT": {
-							
-						}break;
-						case "ENQUIRE": break;
-						case "CANCEL": break;
-						case "BILL": break;
-						case "SUCCESS": {
-							saveOutput(cmdOutput);
-						}break;
+						case "EXIT" : break;
 						default: saveOutput(cmdOutput); break;
 					}
 				}

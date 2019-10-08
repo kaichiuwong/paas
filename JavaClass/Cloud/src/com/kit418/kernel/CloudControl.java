@@ -10,6 +10,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -41,10 +43,17 @@ public class CloudControl {
     private static final String CLOUD_CREDENTIALS_USERNAME="kaichiu.wong@utas.edu.au";
     private static final String CLOUD_CREDENTIALS_SECERT="MzFkNTczNzYzM2RhYTcw";
     private static final String CLOUD_PROJECT_ID="b32a1d6f70c44be880b86f8f2c09773d";
-
+   
     //For Instance connection
     private static final String PRIVATE_KEY_FILE_PATH="/home/ubuntu/kaichiuwong.ppk";
     private static final String PRIVATE_KEY_PASSPHRASE="46709394";
+    
+    private static final String WORKER_PRIVATE_KEY_FILE_PATH="/home/ubuntu/win.ppk";
+    private static final String WORKER_WORKER_PRIVATE_KEY_PASSPHRASE="";
+    private static final String WORKER_CLOUD_KEY_PAIR_NAME="496768-418-key1";
+    private static final String WORKER_CLOUD_CREDENTIALS_USERNAME="theingiw@utas.edu.au";
+    private static final String WORKER_CLOUD_CREDENTIALS_SECERT="OTdmN2MzN2Y2NGYyNjRj";
+    private static final String WORKER_CLOUD_PROJECT_ID="d10f74989f604508aafa198d22d96e60";
     
     //For Instance Creation
     private static final String MASTER_INSTANCE_NAME = "master-server";
@@ -60,12 +69,19 @@ public class CloudControl {
     private static final String MASTER_ADDRESS = "144.6.227.55";
     
     OSClientV3 os = null;
+    OSClientV3 osWorker =null;
     public CloudControl() {
         os = OSFactory.builderV3()
             .endpoint(CLOUD_CONNECTION_STR)
             .credentials(CLOUD_CREDENTIALS_USERNAME, CLOUD_CREDENTIALS_SECERT, Identifier.byName("Default"))
             .scopeToProject(Identifier.byId(CLOUD_PROJECT_ID))
             .authenticate();
+        
+        osWorker = OSFactory.builderV3()
+                .endpoint(CLOUD_CONNECTION_STR)
+                .credentials(WORKER_CLOUD_CREDENTIALS_USERNAME, WORKER_CLOUD_CREDENTIALS_SECERT, Identifier.byName("Default"))
+                .scopeToProject(Identifier.byId(WORKER_CLOUD_PROJECT_ID))
+                .authenticate();
     }
     public void createWorkerNode(String serverName) {
     	deleteServer(serverName);
@@ -113,8 +129,13 @@ public class CloudControl {
     }
     //List of all Servers
     public List<?> ListServers() {
+    	List<Server> resultServer= new ArrayList<Server>();
         List < ? extends Server > servers = os.compute().servers().list();
-        return servers;
+        List<? extends Server > workers = osWorker.compute().servers().list();
+        resultServer.addAll(servers);
+        resultServer.addAll(workers);
+        return resultServer;
+        
     }
     //Delete a Server
     private void deleteServer(String serverName) {
@@ -624,11 +645,23 @@ public class CloudControl {
 	    	System.out.println("J : Execute a Jar File in Worker ");
 	    	System.out.println("L : Print Worker List in Master ");
 	    	System.out.println("O : Get Program Output ");
+	    	System.out.println("W : Get Server List ");
 	    	System.out.println("Q : Quit this Testing Program ");    	
 	    	System.out.println("===================================================");
 	    	System.out.print("> ");
     	}
     }
+    
+    private static void testServerList() {
+    	CloudControl openstack = new CloudControl();
+    	List<?> lstServer = openstack.ListServers();
+    	System.out.printf("Server list  : \n");
+		for(int i=0; i<lstServer.size();i++) {
+		    Server entry = (Server) lstServer.get(i);
+		    System.out.println(entry.getAccessIPv4());
+		}
+    }
+    
     public static void main(String[] args) {
     	Scanner snr = new Scanner(System.in);
     	Thread obj = new Master();
@@ -643,6 +676,7 @@ public class CloudControl {
     			case "M": testStartMaster(obj); break;
     			case "O": testProgramOutput(obj); break;
     			case "P": testWorkerExecutePy(); break;
+    			case "W": testServerList();break;
     			case "Q": System.exit(0); break;
     			default: System.out.println("[ERROR] Wrong Input! Please input again."); break;
     		}
