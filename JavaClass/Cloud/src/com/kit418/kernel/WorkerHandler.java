@@ -21,6 +21,8 @@ public class WorkerHandler extends Thread {
 	private List<WorkerServer> serverList;
 	private Map<String, Thread> workerList;
 	private String status;
+	private Date StartTime;
+	private Date EndTime;
 	
 	public WorkerHandler(Socket s, DataInputStream dis, DataOutputStream dos, Map<String, Thread>  wl) {
 		this.s = s;
@@ -28,10 +30,20 @@ public class WorkerHandler extends Thread {
 		this.dos = dos;
 		this.workerList = wl;
 		this.status = "INIT";
+		this.StartTime = new Date();
+		this.EndTime = this.StartTime;
 	}
 	
 	public String getworkerID() {
 		return workerID;
+	}
+	
+	public Date getStartTime() {
+		return StartTime;
+	}
+	
+	public Date getEndTime() {
+		return EndTime;
 	}
 	
 	private void saveOutput(String content) {
@@ -109,6 +121,7 @@ public class WorkerHandler extends Thread {
 		}
 		catch (IOException ex) {
 			this.status = "ERROR";
+			this.EndTime = new Date();
 		}
 		if (workerID != null) {
 			while (true) {
@@ -121,6 +134,7 @@ public class WorkerHandler extends Thread {
 				}
 				catch (IOException ex) {
 					this.status = "ERROR";
+					this.EndTime = new Date();
 				}
 				break;
 			}
@@ -130,8 +144,10 @@ public class WorkerHandler extends Thread {
 			}
 			catch (Exception ex) {
 				this.status = "ERROR";
+				this.EndTime = new Date();
 			}
 		}
 		this.status = "DONE";
+		this.EndTime = new Date();
 	}
 }

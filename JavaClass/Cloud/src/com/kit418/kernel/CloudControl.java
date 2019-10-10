@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -568,6 +569,20 @@ public class CloudControl {
     	return obj.getStatus();
     }
     
+    public Date getWorkerStartTime(String workerID) {
+    	Master m = (Master) masterObj;
+    	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
+    	
+    	return obj.getStartTime();
+    }
+    
+    public Date getWorkerEndTime(String workerID) {
+    	Master m = (Master) masterObj;
+    	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
+    	
+    	return obj.getEndTime();
+    }
+    
     public List<String> getWorkerList() {
 		Master m = (Master) masterObj;
 		Set<String> wSet = m.getWorkerList().keySet();
@@ -603,6 +618,20 @@ public class CloudControl {
     	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
     	
     	return obj.getStatus();
+    }
+    
+    public static Date testGetWorkerStartime(String workerID) {
+    	Master m = (Master) masterObj;
+    	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
+    	
+    	return obj.getStartTime();
+    }
+    
+    public static Date testGetWorkerEndime(String workerID) {
+    	Master m = (Master) masterObj;
+    	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
+    	
+    	return obj.getEndTime();
     }
     
     public static void testInitServer(String serverName) {
@@ -676,7 +705,9 @@ public class CloudControl {
 				br = new BufferedReader(new FileReader(file));
 				String st; 
 				System.out.println("Output file location: " + filepath);
-				System.out.println("Finish time: " + sdf.format(file.lastModified()));
+				System.out.println("Worker Start time: " + sdf.format(testGetWorkerStartime(input)));
+				System.out.println("Worker End time: " + sdf.format(testGetWorkerEndime(input)));
+				System.out.println("Worker Current Status: " + testGetWorkerStatus(input));
 				System.out.println("Program output for worker " + input);
 				System.out.println("********** START OUTPUT ********************");
 				while ((st = br.readLine()) != null)  {
