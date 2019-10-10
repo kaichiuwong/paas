@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
@@ -70,6 +71,8 @@ public class CloudControl {
     
     OSClientV3 os = null;
     OSClientV3 osWorker =null;
+    private static Thread masterObj;
+    
     public CloudControl() {
         os = OSFactory.builderV3()
             .endpoint(CLOUD_CONNECTION_STR)
@@ -558,9 +561,50 @@ public class CloudControl {
     	executeCommand(CLIENT_INSTANCE_NAME,cmd);
     }
     
+    public String getWorkerStatus(String workerID) {
+    	Master m = (Master) masterObj;
+    	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
+    	
+    	return obj.getStatus();
+    }
+    
+    public List<String> getWorkerList() {
+		Master m = (Master) masterObj;
+		Set<String> wSet = m.getWorkerList().keySet();
+		List<String> rtnList = new ArrayList<String>();
+		
+		if ( rtnList != null ) {
+	    	for( String key: wSet) {
+	    		rtnList.add(key);
+	    	}
+		}
+		
+		return rtnList;
+    }
+    
+    public void startMaster() {
+    	masterObj.run();
+    }
+    
+    public void stopMaster() {
+    	masterObj.stop();
+    }
+    
+    public boolean isMasterAlive() {
+    	return masterObj.isAlive();
+    }
+    
     /*
      * Console Driver to test the program
      */
+    
+    public static String testGetWorkerStatus(String workerID) {
+    	Master m = (Master) masterObj;
+    	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
+    	
+    	return obj.getStatus();
+    }
+    
     public static void testInitServer(String serverName) {
     	CloudControl openstack = new CloudControl();
     	openstack.createWorkerNode(serverName);
@@ -572,7 +616,7 @@ public class CloudControl {
         	openstack.runPython("/home/ubuntu/uploads/Helloworld.py", CLIENT_INSTANCE_NAME);
         }
         catch (Exception ex) {
-        	
+        	ex.printStackTrace();
         }
     }
     
@@ -582,31 +626,48 @@ public class CloudControl {
         	openstack.runJar("/home/ubuntu/uploads/Helloworld.jar", CLIENT_INSTANCE_NAME);
         }
         catch (Exception ex) {
-        	
+        	ex.printStackTrace();
         }
     }
     
-    private static void testStartMaster (Thread obj) {
-    	obj.start();
+    private static void testStartMaster () {
+    	masterObj = new Master();
+    	masterObj.start();
     }
     
-    private static void testPrintWorkerList(Thread obj) {
-		Master m = (Master) obj;
+    @SuppressWarnings("deprecation")
+	private static void testStopMaster () {
+    	masterObj.stop();
+    	masterObj = null;
+    }
+    
+    private static void testMasterStatus () {
+    	if ( masterObj != null ) {
+	    	if ( masterObj.isAlive() ) {
+	    		System.out.println("Master is alive." );
+	    		return;
+	    	}
+    	}
+    	System.out.println("Master is not alive.");
+    }
+    
+    private static void testPrintWorkerList() {
+		Master m = (Master) masterObj;
 		int i = 0;
 		System.out.println(String.format("Total: %d workers stored in this Master.", m.getWorkerList().keySet().size()));
     	for( String key: m.getWorkerList().keySet()) {
-    		System.out.println(String.format("%d) %s", ++i,key));
+    		System.out.println(String.format("%d) %s (STATUS: %s)", ++i,key, testGetWorkerStatus(key)));
     	}
     }
     
-    private static void testProgramOutput(Thread obj) {
+    private static void testProgramOutput() {
     	System.out.println("Please input WORKER ID: ");
-    	testPrintWorkerList(obj);
+    	testPrintWorkerList();
     	System.out.print("WORKERID> ");
     	Scanner snr = new Scanner(System.in);
     	String input = snr.next();
     	SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-    	Master m = (Master) obj;
+    	Master m = (Master) masterObj;
     	if (m.getWorkerList().containsKey(input)) {
     		String filepath = String.format("/home/ubuntu/output/%s.txt", input);
 			File file = new File(filepath); 
@@ -640,7 +701,9 @@ public class CloudControl {
 	    	System.out.println("Please Input Testing Option: ");
 	    	System.out.println("===================================================");
 	    	System.out.println("I : Create New Worker ");
+	    	System.out.println("C : Check Master Listener Status ");
 	    	System.out.println("M : Start Master Listener ");
+	    	System.out.println("S : Stop Master Listener ");
 	    	System.out.println("P : Execute a Python File in Worker ");
 	    	System.out.println("J : Execute a Jar File in Worker ");
 	    	System.out.println("L : Print Worker List in Master ");
@@ -664,17 +727,18 @@ public class CloudControl {
     
     public static void main(String[] args) {
     	Scanner snr = new Scanner(System.in);
-    	Thread obj = new Master();
     	
     	while (true) {
     		PrintCloudMenu();
     		String input = snr.next();
     		switch (input.toUpperCase()) {
+    			case "C": testMasterStatus(); break;
     			case "I": testInitServer(CLIENT_INSTANCE_NAME); break;
     			case "J": testWorkerExecuteJar(); break;
-    			case "L": testPrintWorkerList(obj); break;
-    			case "M": testStartMaster(obj); break;
-    			case "O": testProgramOutput(obj); break;
+    			case "L": testPrintWorkerList(); break;
+    			case "M": testStartMaster(); break;
+    			case "S": testStopMaster(); break;
+    			case "O": testProgramOutput(); break;
     			case "P": testWorkerExecutePy(); break;
     			case "W": testServerList();break;
     			case "Q": System.exit(0); break;

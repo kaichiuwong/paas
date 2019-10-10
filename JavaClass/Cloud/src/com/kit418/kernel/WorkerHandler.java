@@ -20,13 +20,14 @@ public class WorkerHandler extends Thread {
 	private String outputPath ;
 	private List<WorkerServer> serverList;
 	private Map<String, Thread> workerList;
+	private String status;
 	
 	public WorkerHandler(Socket s, DataInputStream dis, DataOutputStream dos, Map<String, Thread>  wl) {
-
 		this.s = s;
 		this.dis = dis;
 		this.dos = dos;
 		this.workerList = wl;
+		this.status = "INIT";
 	}
 	
 	public String getworkerID() {
@@ -93,7 +94,12 @@ public class WorkerHandler extends Thread {
 		return"";
 	}
 	
+	public String getStatus() {
+		return this.status;
+	}
+	
 	public void run() {
+		this.status = "RUNNING";
 		try {
 			workerID = dis.readUTF();
 			outputPath = String.format("/home/ubuntu/output/%s.txt", workerID);
@@ -102,7 +108,7 @@ public class WorkerHandler extends Thread {
 			}
 		}
 		catch (IOException ex) {
-			
+			this.status = "ERROR";
 		}
 		if (workerID != null) {
 			while (true) {
@@ -114,7 +120,7 @@ public class WorkerHandler extends Thread {
 					}
 				}
 				catch (IOException ex) {
-					
+					this.status = "ERROR";
 				}
 				break;
 			}
@@ -123,8 +129,9 @@ public class WorkerHandler extends Thread {
 				this.dos.close();
 			}
 			catch (Exception ex) {
-				
+				this.status = "ERROR";
 			}
 		}
+		this.status = "DONE";
 	}
 }
