@@ -8,7 +8,7 @@
 <%@ page import="java.util.Iterator" %>
 <%
 WebConnector httpclient = new WebConnector();
-Map<String,String> result = httpclient.sendGet("http://localhost:8090/PaaS_WS/InstanceControl");
+Map<String,String> result = httpclient.sendGet("http://localhost:8080/PaaS_WS/InstanceControl");
 %>
 <%@include  file="header.html" %>    
 
@@ -63,6 +63,7 @@ else
 	              </tr>
 			<% } %>
         </tbody>
+     
       </table>
     </div>
   </div>
