@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Vector;
@@ -51,7 +52,7 @@ public class CloudControl {
     private static final String PRIVATE_KEY_PASSPHRASE="46709394";
     
     private static final String WORKER_PRIVATE_KEY_FILE_PATH="/home/ubuntu/win.ppk";
-    private static final String WORKER_WORKER_PRIVATE_KEY_PASSPHRASE="";
+    private static final String WORKER_PRIVATE_KEY_PASSPHRASE="";
     private static final String WORKER_CLOUD_KEY_PAIR_NAME="496768-418-key1";
     private static final String WORKER_CLOUD_CREDENTIALS_USERNAME="theingiw@utas.edu.au";
     private static final String WORKER_CLOUD_CREDENTIALS_SECERT="OTdmN2MzN2Y2NGYyNjRj";
@@ -60,8 +61,9 @@ public class CloudControl {
     //For Instance Creation
     private static final String MASTER_INSTANCE_NAME = "master-server";
     private static final String MASTER_INSTANCE_OS_USERNAME="ubuntu";
-	private static final String CLIENT_INSTANCE_NAME = "UbuntuWorkerNode";
-	private static final String CLIENT_INSTANCE_OS_USERNAME="ubuntu";
+
+    private static final String CLIENT_INSTANCE_NAME = "UbuntuWorkerNode";
+	private static final String CLIENT_INSTANCE_OS_USERNAME="ubuntu";	
 
     //For Testing File Transfer (SFTP PUT)
     private static final String REMOTE_FOLDER_PATH = "/home/ubuntu/" ;
@@ -73,19 +75,28 @@ public class CloudControl {
     OSClientV3 os = null;
     OSClientV3 osWorker =null;
     private static Thread masterObj;
+    private List<WorkerServer> serverList;
+    private static List < ? extends Server > servers;
+    private static List < ? extends Server > workers;
     
     public CloudControl() {
+    	if(osWorker == null) {
+    	osWorker = OSFactory.builderV3()
+                 .endpoint(CLOUD_CONNECTION_STR)
+                 .credentials(WORKER_CLOUD_CREDENTIALS_USERNAME, WORKER_CLOUD_CREDENTIALS_SECERT, Identifier.byName("Default"))
+                 .scopeToProject(Identifier.byId(WORKER_CLOUD_PROJECT_ID))
+                 .authenticate();
+         workers = osWorker.compute().servers().list();
+    	}
+    	if(os == null) {
         os = OSFactory.builderV3()
             .endpoint(CLOUD_CONNECTION_STR)
             .credentials(CLOUD_CREDENTIALS_USERNAME, CLOUD_CREDENTIALS_SECERT, Identifier.byName("Default"))
             .scopeToProject(Identifier.byId(CLOUD_PROJECT_ID))
             .authenticate();
-        
-        osWorker = OSFactory.builderV3()
-                .endpoint(CLOUD_CONNECTION_STR)
-                .credentials(WORKER_CLOUD_CREDENTIALS_USERNAME, WORKER_CLOUD_CREDENTIALS_SECERT, Identifier.byName("Default"))
-                .scopeToProject(Identifier.byId(WORKER_CLOUD_PROJECT_ID))
-                .authenticate();
+        servers = os.compute().servers().list();
+    	}
+       
     }
     public void createWorkerNode(String serverName) {
     	deleteServer(serverName);
@@ -115,7 +126,7 @@ public class CloudControl {
             .build();
 
         os.compute().servers().boot(server);
-        initServer(serverName);
+        initServer(serverName,false);
     }
     
     private OSClientV3 getOS() {
@@ -134,13 +145,15 @@ public class CloudControl {
     //List of all Servers
     public List<?> ListServers() {
     	List<Server> resultServer= new ArrayList<Server>();
-        List < ? extends Server > servers = os.compute().servers().list();
-        List<? extends Server > workers = osWorker.compute().servers().list();
         resultServer.addAll(servers);
         resultServer.addAll(workers);
         return resultServer;
         
     }
+    public List<?> ListWorkers(){
+    	return workers;
+    }
+    
     //Delete a Server
     private void deleteServer(String serverName) {
     	System.out.printf("Removing instance (%s) ...\n", serverName);
@@ -194,8 +207,9 @@ public class CloudControl {
      * All wait functions
      */
     
-    private boolean waitSFTPService(String ipaddress) throws IOException {
-    	File privateKeyFile = new File(PRIVATE_KEY_FILE_PATH);
+    private boolean waitSFTPService(String ipaddress,String KEY_FILE_PATH,String KEY_PASSPHRASE) throws IOException {
+    	
+    	File privateKeyFile = new File(KEY_FILE_PATH);
     	if (!privateKeyFile.exists()) {
     		throw new IOException("Private key file not found: " + privateKeyFile.getAbsolutePath());
     	}
@@ -205,7 +219,7 @@ public class CloudControl {
 	    		Properties config = new Properties(); 
                 //NO KNOWN HOST CHECKING 
 	    		config.put("StrictHostKeyChecking", "no");
-	    		jsch.addIdentity(PRIVATE_KEY_FILE_PATH,PRIVATE_KEY_PASSPHRASE);
+	    		jsch.addIdentity(KEY_FILE_PATH,KEY_PASSPHRASE);
 	    		Session session=jsch.getSession(CLIENT_INSTANCE_OS_USERNAME, ipaddress, 22);
 	    		session.setConfig(config);
 	    		session.setTimeout(30000);
@@ -340,25 +354,38 @@ public class CloudControl {
      * Operations
      */
     
-    private String uploadFile(String ServerName, String localFile, String remoteFolder) throws IOException {
+    private String uploadFile(String ServerName, String localFile, String remoteFolder, boolean isWorker) throws IOException {
     	String ipaddress = getIP(ServerName);    	
     	String filename = Paths.get(localFile).getFileName().toString();
     	String remoteFile = remoteFolder + filename;
-    	File privateKeyFile = new File(PRIVATE_KEY_FILE_PATH);
+    	
+    	String KEY_FILE_PATH="";
+    	String KEY_PASSPHRASE="";
+    	
+    	if(isWorker) {
+    		KEY_FILE_PATH = WORKER_PRIVATE_KEY_FILE_PATH;
+    		KEY_PASSPHRASE = WORKER_PRIVATE_KEY_PASSPHRASE;
+    		
+    	}else {
+    		KEY_FILE_PATH = PRIVATE_KEY_FILE_PATH;
+    		KEY_PASSPHRASE = PRIVATE_KEY_PASSPHRASE;
+    	}
+    	
+    	File privateKeyFile = new File(KEY_FILE_PATH);
     	if (!privateKeyFile.exists()) {
     		throw new IOException("Private key file not found: " + privateKeyFile.getAbsolutePath());
     	}
     	
     	if (ipaddress != null) {
     		waitReachable(ipaddress);
-    		waitSFTPService(ipaddress);
+    		waitSFTPService(ipaddress, KEY_FILE_PATH,KEY_PASSPHRASE);
     		System.out.printf("Starting upload file to %s ...\n", ServerName);
     		try {
 	    		JSch jsch=new JSch();
 	    		Properties config = new Properties(); 
 	    		config.put("StrictHostKeyChecking", "no");
 	    		
-	    		jsch.addIdentity(PRIVATE_KEY_FILE_PATH,PRIVATE_KEY_PASSPHRASE);
+	    		jsch.addIdentity(KEY_FILE_PATH,KEY_PASSPHRASE);
 	    		Session session=jsch.getSession(CLIENT_INSTANCE_OS_USERNAME, ipaddress, 22);
 	    		session.setConfig(config);
 	    		session.setTimeout(30000);
@@ -382,28 +409,40 @@ public class CloudControl {
     	}
     	return null;
     }
-    private String uploadFile(String ServerName, String localFile) throws IOException {
+    
+    private String uploadFile(String ServerName, String localFile,boolean isWorker) throws IOException {
     	String defaultRemoteFolder = REMOTE_FOLDER_PATH + "uploads/";
-    	return uploadFile(ServerName, localFile, defaultRemoteFolder);
+    	return uploadFile(ServerName, localFile, defaultRemoteFolder, isWorker);
     }
     
-    private void downloadFile(String ServerName, String remoteFile, String localFolder) throws IOException {
+    private void downloadFile(String ServerName, String remoteFile, String localFolder, boolean isWorker) throws IOException {
     	String ipaddress = getIP(ServerName);
-    	File privateKeyFile = new File(PRIVATE_KEY_FILE_PATH);
+    	String KEY_FILE_PATH="";
+    	String KEY_PASSPHRASE="";
+    	
+    	if(isWorker) {
+    		KEY_FILE_PATH = WORKER_PRIVATE_KEY_FILE_PATH;
+    		KEY_PASSPHRASE = WORKER_PRIVATE_KEY_PASSPHRASE;
+    		
+    	}else {
+    		KEY_FILE_PATH = PRIVATE_KEY_FILE_PATH;
+    		KEY_PASSPHRASE = PRIVATE_KEY_PASSPHRASE;
+    	}
+    	File privateKeyFile = new File(KEY_FILE_PATH);
     	if (!privateKeyFile.exists()) {
     		throw new IOException("Private key file not found: " + privateKeyFile.getAbsolutePath());
     	}
     	
     	if (ipaddress != null) {
     		waitReachable(ipaddress);
-    		waitSFTPService(ipaddress);
+    		waitSFTPService(ipaddress,KEY_FILE_PATH,KEY_PASSPHRASE);
     		System.out.printf("Starting download file from %s ...\n", ServerName);
     		try {
 	    		JSch jsch=new JSch();
 	    		Properties config = new Properties(); 
 	    		config.put("StrictHostKeyChecking", "no");
 	    		
-	    		jsch.addIdentity(PRIVATE_KEY_FILE_PATH,PRIVATE_KEY_PASSPHRASE);
+	    		jsch.addIdentity(KEY_FILE_PATH,KEY_PASSPHRASE);
 	    		Session session=jsch.getSession(CLIENT_INSTANCE_OS_USERNAME, ipaddress, 22);
 	    		session.setConfig(config);
 	    		session.setTimeout(30000);
@@ -422,23 +461,35 @@ public class CloudControl {
     	}
     }
     
-    private void executeCommand(String ServerName, String cmd) throws IOException {
+    private void executeCommand(String ServerName, String cmd,boolean isWorker) throws IOException {
     	String ipaddress = getIP(ServerName);
-    	File privateKeyFile = new File(PRIVATE_KEY_FILE_PATH);
+    	String KEY_FILE_PATH="";
+    	String KEY_PASSPHRASE="";
+    	
+    	if(isWorker) {
+    		KEY_FILE_PATH = WORKER_PRIVATE_KEY_FILE_PATH;
+    		KEY_PASSPHRASE = WORKER_PRIVATE_KEY_PASSPHRASE;
+    		
+    	}else {
+    		KEY_FILE_PATH = PRIVATE_KEY_FILE_PATH;
+    		KEY_PASSPHRASE = PRIVATE_KEY_PASSPHRASE;
+    	}
+    	
+    	File privateKeyFile = new File(KEY_FILE_PATH);
     	if (!privateKeyFile.exists()) {
     		throw new IOException("Private key file not found: " + privateKeyFile.getAbsolutePath());
     	}
     	
     	if (ipaddress != null) {
     		waitReachable(ipaddress);
-    		waitSFTPService(ipaddress);
+    		waitSFTPService(ipaddress,KEY_FILE_PATH,KEY_PASSPHRASE);
     		System.out.printf("Starting execute command at %s ...\n", ServerName);
     		try {
 	    		JSch jsch=new JSch();
 	    		Properties config = new Properties(); 
 	    		config.put("StrictHostKeyChecking", "no");
 	    		
-	    		jsch.addIdentity(PRIVATE_KEY_FILE_PATH,PRIVATE_KEY_PASSPHRASE);
+	    		jsch.addIdentity(KEY_FILE_PATH,KEY_PASSPHRASE);
 	    		Session session=jsch.getSession(CLIENT_INSTANCE_OS_USERNAME, ipaddress, 22);
 	    		session.setConfig(config);
 	    		session.setTimeout(30000);
@@ -505,61 +556,63 @@ public class CloudControl {
     	command += String.format("echo 'sudo apt install default-jdk -y' >> %s ;", remotePath);
     	command += String.format("echo 'echo \"[OK] Initialisation Completed!\"' >> %s ;", remotePath);
     	command += String.format("chmod 777 %s ", remotePath);
-    	executeCommand(serverName,command);
+    	executeCommand(serverName,command, false);
     }
     
-    private void initServer(String serverName) {    	
+    private void initServer(String serverName,boolean isWorker) {    	
         try {
         	createinitfile(serverName, REMOTE_FOLDER_PATH+REMOTE_INIT_FILE_NAME);
-        	executeCommand(serverName, REMOTE_FOLDER_PATH+REMOTE_INIT_FILE_NAME);
-        	uploadFile(serverName, "/home/ubuntu/bin/com/kit418/kernel/Worker.class","/home/ubuntu/bin/com/kit418/kernel/");
+        	executeCommand(serverName, REMOTE_FOLDER_PATH+REMOTE_INIT_FILE_NAME, false);
+        	uploadFile(serverName, "/home/ubuntu/bin/com/kit418/kernel/Worker.class","/home/ubuntu/bin/com/kit418/kernel/", isWorker);
         }
         catch (Exception e) {
         	System.out.println("Exception occur: " + e.getMessage());
         }
     }
     
+    
     //@TODO: will further enhance to be thread programming
-    public void runJar(String JarFilePath, String workNodeName) throws IOException {
-    	String remoteJarPath = uploadFile(workNodeName, JarFilePath);    	
+    
+    public void runJar(String JarFilePath, String workNodeName, boolean isWorker) throws IOException {
+    	String remoteJarPath = uploadFile(workNodeName, JarFilePath,isWorker);    	
     	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
     								MASTER_ADDRESS,
     								MASTER_WORKER_PORT,
     								remoteJarPath,
     								"java");
-    	executeCommand(CLIENT_INSTANCE_NAME,cmd);
+    	executeCommand(workNodeName,cmd,isWorker);
     }
     
-    public void runPython(String PyFilePath, String workNodeName) throws IOException {
-    	String remotePyPath = uploadFile(workNodeName, PyFilePath);
+    public void runPython(String PyFilePath, String workNodeName, boolean isWorker) throws IOException {
+    	String remotePyPath = uploadFile(workNodeName, PyFilePath,isWorker);
     	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
 				MASTER_ADDRESS,
 				MASTER_WORKER_PORT,
 				remotePyPath,
 				"python");
-    	executeCommand(CLIENT_INSTANCE_NAME,cmd);
+    	executeCommand(workNodeName,cmd,isWorker);
     }
     
-    public void runJar(String JarFilePath, String inputFilePath, String workNodeName) throws IOException {
-    	String remoteJarPath = uploadFile(workNodeName, JarFilePath);
-    	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath);
+    public void runJar(String JarFilePath, String inputFilePath, String workNodeName, boolean isWorker) throws IOException {
+    	String remoteJarPath = uploadFile(workNodeName, JarFilePath,isWorker);
+    	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath,isWorker);
     	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
 				MASTER_ADDRESS,
 				MASTER_WORKER_PORT,
 				remoteJarPath + " " + remoteInputFilePath,
 				"python");
-    	executeCommand(CLIENT_INSTANCE_NAME,cmd);
+    	executeCommand(CLIENT_INSTANCE_NAME,cmd,isWorker);
     }
     
-    public void runPython(String PyFilePath, String inputFilePath, String workNodeName) throws IOException {
-    	String remotePyPath = uploadFile(workNodeName, PyFilePath);
-    	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath);
+    public void runPython(String PyFilePath, String inputFilePath, String workNodeName, boolean isWorker) throws IOException {
+    	String remotePyPath = uploadFile(workNodeName, PyFilePath,isWorker);
+    	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath,isWorker);
     	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
 				MASTER_ADDRESS,
 				MASTER_WORKER_PORT,
 				remotePyPath + " " + remoteInputFilePath,
 				"python");
-    	executeCommand(CLIENT_INSTANCE_NAME,cmd);
+    	executeCommand(CLIENT_INSTANCE_NAME,cmd,isWorker);
     }
     
     public String getWorkerStatus(String workerID) {
@@ -571,16 +624,22 @@ public class CloudControl {
     
     public Date getWorkerStartTime(String workerID) {
     	Master m = (Master) masterObj;
+    	if(m == null) return null;
     	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
-    	
-    	return obj.getStartTime();
+    	if(obj != null) {
+    		return obj.getStartTime();
+    	}
+    	return null;
     }
     
     public Date getWorkerEndTime(String workerID) {
     	Master m = (Master) masterObj;
+    	if(m == null) return null;
     	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
-    	
-    	return obj.getEndTime();
+    	if(obj != null) {
+    		return obj.getEndTime();
+    	}
+    	return null;
     }
     
     public List<String> getWorkerList() {
@@ -609,9 +668,54 @@ public class CloudControl {
     	return masterObj.isAlive();
     }
     
+    public static String getOutputFile(String workerID) {
+    	
+    	 String FilePath = String.format("/home/ubuntu/output/%s.txt", workerID);
+    	
+    	//String FilePath  = Paths.get("").toAbsolutePath().toString()+String.format("/output/%s.txt", workerID);
+    	String result="";
+    	  try
+    	  {
+    	    BufferedReader reader = new BufferedReader(new FileReader(FilePath));
+    	    String line;
+    	    while ((line = reader.readLine()) != null)
+    	    {
+    	    	result += line+"\n";
+    	    }
+    	    reader.close();
+    	    return result;
+    	  }
+    	  catch(FileNotFoundException e) {
+    		 System.err.format("File not found '%s'.", FilePath);
+      	    return null;
+    	  }
+    	  catch (Exception e)
+    	  {
+    	    System.err.format("Exception occurred trying to read '%s'.", FilePath);
+    	    e.printStackTrace();
+    	    return null;
+    	  }
+    }
+   
+    public String cancelWorker(String workerID) {
+    	try {
+	    	Master m = (Master) masterObj;
+	    	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
+	    	if(obj != null  ) {
+	    		if(obj.getStatus().toUpperCase() == "DONE")
+	    			return "Job completed and can't cancelled.";
+    			m.getWorkerList().remove(workerID);
+		    	obj.stop();
+		    	return "";
+	    	}
+	    	return "Invalid PassCode.";
+    	}catch(Exception ex) {
+    		return "Error occured in Request.";
+    	}
+    }
     /*
      * Console Driver to test the program
-     */
+    */
     
     public static String testGetWorkerStatus(String workerID) {
     	Master m = (Master) masterObj;
@@ -620,6 +724,11 @@ public class CloudControl {
     	return obj.getStatus();
     }
     
+    public static void testOutputFile() {
+    	String workerID = "20191010_031508.520_0000001";
+    	System.out.println(getOutputFile(workerID));
+    }
+     
     public static Date testGetWorkerStartime(String workerID) {
     	Master m = (Master) masterObj;
     	WorkerHandler obj = (WorkerHandler) m.getWorkerList().get(workerID);
@@ -642,7 +751,7 @@ public class CloudControl {
     private static void testWorkerExecutePy() {
         CloudControl openstack = new CloudControl();
         try {
-        	openstack.runPython("/home/ubuntu/uploads/Helloworld.py", CLIENT_INSTANCE_NAME);
+        	openstack.runPython("/home/ubuntu/uploads/Helloworld.py", CLIENT_INSTANCE_NAME, false);
         }
         catch (Exception ex) {
         	ex.printStackTrace();
@@ -652,7 +761,7 @@ public class CloudControl {
     private static void testWorkerExecuteJar() {
         CloudControl openstack = new CloudControl();
         try {
-        	openstack.runJar("/home/ubuntu/uploads/Helloworld.jar", CLIENT_INSTANCE_NAME);
+        	openstack.runJar("/home/ubuntu/uploads/Helloworld.jar", CLIENT_INSTANCE_NAME, false);
         }
         catch (Exception ex) {
         	ex.printStackTrace();
@@ -740,6 +849,8 @@ public class CloudControl {
 	    	System.out.println("L : Print Worker List in Master ");
 	    	System.out.println("O : Get Program Output ");
 	    	System.out.println("W : Get Server List ");
+	    	System.out.println("WL : Get Worker Server List ");
+	    	System.out.println("F : Get Output File ");
 	    	System.out.println("Q : Quit this Testing Program ");    	
 	    	System.out.println("===================================================");
 	    	System.out.print("> ");
@@ -752,7 +863,17 @@ public class CloudControl {
     	System.out.printf("Server list  : \n");
 		for(int i=0; i<lstServer.size();i++) {
 		    Server entry = (Server) lstServer.get(i);
-		    System.out.println(entry.getAccessIPv4());
+		    System.out.println(entry.getAccessIPv4() +" " + entry.getName());
+		}
+    }
+    
+    private static void testWorkerServerList() {
+    	CloudControl openstack = new CloudControl();
+    	List<?> lstServer = openstack.ListWorkers();
+    	System.out.printf("Server list  : \n");
+		for(int i=0; i<lstServer.size();i++) {
+		    Server entry = (Server) lstServer.get(i);
+		    System.out.println(entry.getAccessIPv4() +" " + entry.getName());
 		}
     }
     
@@ -772,7 +893,10 @@ public class CloudControl {
     			case "O": testProgramOutput(); break;
     			case "P": testWorkerExecutePy(); break;
     			case "W": testServerList();break;
+    			case "WL": testWorkerServerList();break;
+    			case "F": testOutputFile();break;
     			case "Q": System.exit(0); break;
+    			
     			default: System.out.println("[ERROR] Wrong Input! Please input again."); break;
     		}
     	}
