@@ -133,11 +133,12 @@ public class InstanceControl extends HttpServlet {
 	
 	private String enquireStatus(String workerID) {
 		String result = "";
+		String ErrorMessage ="System can't proceed with this request.Please contact system administrator.";
 		try {
 			JSONObject svrObject = new JSONObject();
 			String Status = openstack.getWorkerStatus(workerID);
 			Status = Status != "" ? Status.toUpperCase() : Status;
-			String ErrorMessage ="System can't proceed with this request.Please contact system administrator.";
+			
 			switch(Status) {
 				case "INIT":
 				case "RUNNING":
@@ -160,7 +161,9 @@ public class InstanceControl extends HttpServlet {
 			}
 		
 		}catch(Exception e) {
-			
+			JSONObject svrObject = new JSONObject();
+			svrObject.put("errorMessage",ErrorMessage);
+			result = svrObject.toJSONString();
 		}
 		return result;
 	}

@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
     pageEncoding="utf-8"%>
 <%@ page import="com.kit418.web.WebConnector" %>
-<%@ page import="com.kit418.web.UiFunctions" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="org.json.simple.JSONArray" %>
 <%@ page import="org.json.simple.JSONObject" %>
@@ -29,6 +28,7 @@
           <tbody>
 		    <tr>
 		    <form action="../PaaS_WS/FileUploadServlet" method="post" enctype="multipart/form-data">
+ 
               <th class="th-sm export">
               	<select class="form-control" id="programType" name="programTypeSelect" >
 				  <option value="JAVA">JAVA</option>

@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
     pageEncoding="utf-8"%>
 <%@ page import="com.kit418.web.WebConnector" %>
-<%@ page import="com.kit418.web.UiFunctions" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="org.json.simple.JSONArray" %>
 <%@ page import="org.json.simple.JSONObject" %>
@@ -117,8 +116,12 @@ function getFromServer()
    	  document.getElementById("fileLocation").value = res.split(";")[1];
    	  billFileName = "Bill_" + document.getElementById("userPasscode").value;
    	  billContent = "Price: " +res.split(";")[2]+ "Description: "+res.split(";")[3];
-     } else {
-   	  document.getElementById("errorAlert").style.display = "";
+     } else if(statusNumber==-1){
+    	 document.getElementById("errorAlert").style.display = "";
+      	  document.getElementById("errorAlert").innerHTML = res.split(";")[1];
+     }
+     else {
+   	  document.getElementById("errorAlert").style.display = res.split(";")[1];
    	  document.getElementById("errorAlert").innerHTML = "[Error] Wrong passcode! Please resubmit it.";
      }
      // For test

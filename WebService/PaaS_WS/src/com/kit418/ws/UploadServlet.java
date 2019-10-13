@@ -24,6 +24,7 @@ import org.openstack4j.model.compute.Server;
 
 import com.kit418.kernel.CloudControl;
 
+/*Not Using Only For testing purpose*/
 @WebServlet("/UploadServlet")
 public class UploadServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
