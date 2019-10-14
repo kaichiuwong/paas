@@ -68,6 +68,15 @@ public class FileUploadServlet extends HttpServlet {
 		CLIENT_INSTANCE_NAME = selectedServer.getServer().getName();
 	}
 	
+	private void setAvailableServer(String serverName) {
+		WorkerServer selectedServer = workerServerList.stream().filter(u -> u.getServer().getName() == serverName ).findFirst().get();
+		if(selectedServer != null) {
+			workerServerList.remove(selectedServer);
+			selectedServer.setBusy(false);
+			workerServerList.add(selectedServer);
+		}
+	}
+	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -217,10 +226,12 @@ public class FileUploadServlet extends HttpServlet {
 				 throw new Exception(".jar file is missing.Please select jar file. "); 
 			 getServer();
 			 if(inputFilePath != "") {
-				openstack.runJar(javaFilePath,inputFilePath, CLIENT_INSTANCE_NAME,true);
+				 PassCode= openstack.runJar(javaFilePath,inputFilePath, CLIENT_INSTANCE_NAME,true);
+				 setAvailableServer(CLIENT_INSTANCE_NAME);
 				//return Output(javaFilePath,inputFilePath, CLIENT_INSTANCE_NAME);
 			 }else {
-				openstack.runJar(javaFilePath, CLIENT_INSTANCE_NAME,true); 
+				 PassCode= openstack.runJar(javaFilePath, CLIENT_INSTANCE_NAME,true);
+				 setAvailableServer(CLIENT_INSTANCE_NAME);
 				 //return Output(javaFilePath,inputFilePath, CLIENT_INSTANCE_NAME);
 			 }
 		}break;	
@@ -238,21 +249,23 @@ public class FileUploadServlet extends HttpServlet {
 				 throw new Exception(".py file is missing.Please select py file. "); 
 			 getServer();
 			 if(inputFilePath != "") {
-				 openstack.runJar(pyFilePath,inputFilePath, CLIENT_INSTANCE_NAME, true);
+				 PassCode= openstack.runJar(pyFilePath,inputFilePath, CLIENT_INSTANCE_NAME, true);
+				 setAvailableServer(CLIENT_INSTANCE_NAME);
 				 //return Output(pyFilePath,inputFilePath, CLIENT_INSTANCE_NAME);
 			 }else {
-				openstack.runJar(pyFilePath, CLIENT_INSTANCE_NAME,true); 
+				 PassCode= openstack.runJar(pyFilePath, CLIENT_INSTANCE_NAME,true);
+				 setAvailableServer(CLIENT_INSTANCE_NAME);
 				 //return Output(pyFilePath,inputFilePath, CLIENT_INSTANCE_NAME);
 			 }
 		}break;	
 		default : throw new Exception("Invalid File Type"); 
 		}
 		
-		/*JSONObject jo = new JSONObject();
+		JSONObject jo = new JSONObject();
 		jo.put("PassCode",PassCode);
 		
-		return jo.toJSONString();*/
-		return PassCode;
+		return jo.toJSONString();
+		//return PassCode;
 		
 	}
 	

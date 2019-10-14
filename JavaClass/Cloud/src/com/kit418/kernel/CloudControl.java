@@ -574,7 +574,7 @@ public class CloudControl {
     
     //@TODO: will further enhance to be thread programming
     
-    public void runJar(String JarFilePath, String workNodeName, boolean isWorker) throws IOException {
+    public String runJar(String JarFilePath, String workNodeName, boolean isWorker) throws IOException {
     	String remoteJarPath = uploadFile(workNodeName, JarFilePath,isWorker);    	
     	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
     								MASTER_ADDRESS,
@@ -582,9 +582,10 @@ public class CloudControl {
     								remoteJarPath,
     								"java");
     	executeCommand(workNodeName,cmd,isWorker);
+    	return getLatestWorkerID();
     }
     
-    public void runPython(String PyFilePath, String workNodeName, boolean isWorker) throws IOException {
+    public String runPython(String PyFilePath, String workNodeName, boolean isWorker) throws IOException {
     	String remotePyPath = uploadFile(workNodeName, PyFilePath,isWorker);
     	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
 				MASTER_ADDRESS,
@@ -592,9 +593,10 @@ public class CloudControl {
 				remotePyPath,
 				"python");
     	executeCommand(workNodeName,cmd,isWorker);
+    	return getLatestWorkerID();
     }
     
-    public void runJar(String JarFilePath, String inputFilePath, String workNodeName, boolean isWorker) throws IOException {
+    public String runJar(String JarFilePath, String inputFilePath, String workNodeName, boolean isWorker) throws IOException {
     	String remoteJarPath = uploadFile(workNodeName, JarFilePath,isWorker);
     	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath,isWorker);
     	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
@@ -603,9 +605,10 @@ public class CloudControl {
 				remoteJarPath + " " + remoteInputFilePath,
 				"python");
     	executeCommand(CLIENT_INSTANCE_NAME,cmd,isWorker);
+    	return getLatestWorkerID();
     }
     
-    public void runPython(String PyFilePath, String inputFilePath, String workNodeName, boolean isWorker) throws IOException {
+    public String runPython(String PyFilePath, String inputFilePath, String workNodeName, boolean isWorker) throws IOException {
     	String remotePyPath = uploadFile(workNodeName, PyFilePath,isWorker);
     	String remoteInputFilePath = uploadFile(workNodeName, inputFilePath,isWorker);
     	String cmd = String.format("java -cp \"/home/ubuntu/bin\" com.kit418.kernel.Worker %s %d %s %s",
@@ -614,6 +617,7 @@ public class CloudControl {
 				remotePyPath + " " + remoteInputFilePath,
 				"python");
     	executeCommand(CLIENT_INSTANCE_NAME,cmd,isWorker);
+    	return getLatestWorkerID();
     }
     
     public String getWorkerStatus(String workerID) {
