@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -654,6 +655,19 @@ public class CloudControl {
 		}
 		
 		return rtnList;
+    }
+    
+    public String getLatestWorkerID() {
+    	List<String> wrklist = getWorkerList();
+    	String rtnStr = "";
+    	
+    	for (String str: wrklist) {
+    		if (str.compareTo(rtnStr) < 0) {
+    			rtnStr = str;
+    		}
+    	}
+    	
+    	return rtnStr;
     }
     
     public void startMaster() {
