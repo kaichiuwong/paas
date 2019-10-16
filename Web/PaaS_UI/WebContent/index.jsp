@@ -28,7 +28,7 @@ else
 <div class="container-flui">
   <div class="card mt-5">
     <div class="card-header">
-      <h2>Server List</h2>
+      <h2>Worker List</h2>
     </div>
     <div class="card-body">
       <table id="dtBasicExample" class="table table-striped table-bordered" cellspacing="0" width="100%">

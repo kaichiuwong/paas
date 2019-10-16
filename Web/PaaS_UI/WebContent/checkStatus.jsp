@@ -25,7 +25,7 @@
         </thead>
           <tbody>
 		    <tr>
-			  <th><input type="text" id="userPasscode" name="userPasscodeBox" value="0000" class="form-control" /></th>
+			  <th><input type="text" id="userPasscode" name="userPasscodeBox" value="20191006_065717.189_0000001" class="form-control" /></th>
               <th><input type="button" id="submitPasscode" value="Submit" onclick="getFromServer();" class="btn btn-primary" role="button"></th>
 		    </tr>
 		  </tbody>
@@ -80,67 +80,8 @@ var billContent;
 
 function getFromServer()
 {
-  // chaneg Submit button & Show resumit button
-  document.getElementById("submitPasscode").disabled = true;
-  document.getElementById("userPasscode").disabled = true;
-  document.getElementById("submitAgain").style.display = "";
-  
-  var xmlhttp;
-  if (window.XMLHttpRequest)
-  {// code for IE7+, Firefox, Chrome, Opera, Safari
-    xmlhttp=new XMLHttpRequest();
-  }
-  else
-  {// code for IE6, IE5
-   xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-  }
- 
-  xmlhttp.open("POST","gethttp.jsp",true);
-  xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-  xmlhttp.send("userPasscodeValue="+document.getElementById("userPasscode").value
-  				+"&sendAction=enquireStatus");
-
-  xmlhttp.onreadystatechange=function()
-  {
-   if (xmlhttp.readyState==4 && xmlhttp.status==200)
-   {
-     var res = xmlhttp.responseText;
-     var statusNumber = res.split(";")[0]; // 0=inprogress, 1=completed
-              
-     if (statusNumber==0){
-   	  document.getElementById("passCodeSubmitted").style.display = "";
-   	  document.getElementById("InProgressBar").style.display = "";        	  
-     } else if(statusNumber==1){
-   	  document.getElementById("passCodeSubmitted").style.display = "";
-   	  document.getElementById("CompletedBar").style.display = "";
-   	  document.getElementById("fileLocation").value = res.split(";")[1];
-   	  billFileName = "Bill_" + document.getElementById("userPasscode").value;
-   	  billContent = "Price: " +res.split(";")[2]+ "Description: "+res.split(";")[3];
-     } else if(statusNumber==-1){
-    	 document.getElementById("errorAlert").style.display = "";
-      	  document.getElementById("errorAlert").innerHTML = res.split(";")[1];
-     }
-     else {
-   	  document.getElementById("errorAlert").style.display = res.split(";")[1];
-   	  document.getElementById("errorAlert").innerHTML = "[Error] Wrong passcode! Please resubmit it.";
-     }
-     // For test
-     //document.getElementById("test").value = res;
-     //document.getElementById("test").style.display = "";
-     //document.getElementById("test").value = res.split(";").replace("/t",""); //not work
-     //var uri_success = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQO2J5R_XWVa-pYRMNyTw3-KaDA0oWOXbswpF2NLrxyihUmdHeJ";
-     //document.getElementById("photo_snapshot2").innerHTML = '<img src="'+uri_success+'" height="180" width="180"/>';
-     
-   } else {
-     // For test
-     //document.getElementById("test").style.display = "";
-     //document.getElementById("errorAlert").style.display = "";
-     //document.getElementById("errorAlert").innerHTML = "[Error] HttpRequest - xmlhttp.readyState: "+xmlhttp.readyState +", xmlhttp.status: "+ xmlhttp.status;
-     //var uri_fail = "https://stickershop.line-scdn.net/stickershop/v1/product/1128841/LINEStorePC/main.png";
-     //document.getElementById("photo_snapshot2").innerHTML = '<img src="'+uri_fail+'" height="180" width="180"/>';
-     
-   }
-  }
+	var id = $('#userPasscode').val();
+	window.location.href = "./getResult.jsp?ID=" + id;
 }
 
 function billtoTxtFile() {

@@ -41,13 +41,18 @@ public class FileUploadServlet extends HttpServlet {
 	private static final String UPLOAD_DIRECTORY="/home/ubuntu/uploads/";
 	//private static final String  UPLOAD_DIRECTORY="/Users/theingiwin/upload/";
 	private static String CLIENT_INSTANCE_NAME = "UbuntuWorkerNode";
-	private CloudControl openstack;
+	private static CloudControl openstack;
 	List<WorkerServer> workerServerList= new ArrayList<WorkerServer>();
 	
     /**
      * Default constructor. 
      */
     public FileUploadServlet() {
+
+    }
+    
+    public void init() throws ServletException
+    {
     	workerServerList = new ArrayList<WorkerServer>();
     	if(openstack == null) {
     		openstack = new CloudControl();
@@ -88,7 +93,7 @@ public class FileUploadServlet extends HttpServlet {
 	    List<Part> fileParts = request.getParts().stream().filter(part -> "filePathChoose".equals(part.getName())).collect(Collectors.toList());
 		
 	    List<String> filesList = new ArrayList<String>();
-	    String userPassCode = "userPassCode123"; //
+	    String userPassCode = ""; //
 
 		PrintWriter writer = response.getWriter();
 		response.setContentType("text/html");
@@ -122,7 +127,7 @@ public class FileUploadServlet extends HttpServlet {
 					+"				<body class=\"bg-light\">"
 					+"				<!-- Navigator start -->"
 					+"				    <nav class=\"navbar navbar-expand-lg navbar-dark bg-dark\">"
-					+"				      <a class=\"navbar-brand\" href=\"./index.jsp\">PaaS</a>"
+					+"				      <a class=\"navbar-brand\" href=\"../PaaS_UI/index.jsp\">PaaS</a>"
 					+"				      <button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#navbarNavDropdown\" aria-controls=\"navbarNavDropdown\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">"
 					+"				        <span class=\"navbar-toggler-icon\"></span>"
 					+"				      </button>"
@@ -190,16 +195,15 @@ public class FileUploadServlet extends HttpServlet {
 					+"					  alert(\"Copied the passcode: \" + copyText.value);"
 					+"					}"
 					+"					</script>"
-					//+"					<p id=\"test\" style=\"color:red\">11></p>"
 					+"				  </body>"
 					+"				</html>");
 							
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			writer.println("<script type='text/javascript'>");
-			writer.println("alert(" + "'" + e.getMessage() + "'" + ");</script>"
-					+"					      <a href=\"../PaaS_UI/uploadProgram.jsp\" id=\"uploadAgain\" class=\"btn btn-outline-primary\" role=\"button\" aria-pressed=\"true\">Upload Again</a>");
+			writer.println("alert('WorkerID: " +userPassCode +", " + e.getMessage() + "');</script>");
 			writer.println("</head><body></body></html>");
+			e.printStackTrace();
 			
 		}finally {
 			writer.close();
@@ -249,23 +253,18 @@ public class FileUploadServlet extends HttpServlet {
 				 throw new Exception(".py file is missing.Please select py file. "); 
 			 getServer();
 			 if(inputFilePath != "") {
-				 PassCode= openstack.runJar(pyFilePath,inputFilePath, CLIENT_INSTANCE_NAME, true);
+				 PassCode= openstack.runPython(pyFilePath,inputFilePath, CLIENT_INSTANCE_NAME, true);
 				 setAvailableServer(CLIENT_INSTANCE_NAME);
 				 //return Output(pyFilePath,inputFilePath, CLIENT_INSTANCE_NAME);
 			 }else {
-				 PassCode= openstack.runJar(pyFilePath, CLIENT_INSTANCE_NAME,true);
+				 PassCode= openstack.runPython(pyFilePath, CLIENT_INSTANCE_NAME,true);
 				 setAvailableServer(CLIENT_INSTANCE_NAME);
 				 //return Output(pyFilePath,inputFilePath, CLIENT_INSTANCE_NAME);
 			 }
 		}break;	
 		default : throw new Exception("Invalid File Type"); 
 		}
-		
-		JSONObject jo = new JSONObject();
-		jo.put("PassCode",PassCode);
-		
-		return jo.toJSONString();
-		//return PassCode;
+		return PassCode;
 		
 	}
 	

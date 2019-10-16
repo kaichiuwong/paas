@@ -81,6 +81,8 @@ public class CloudControl {
     private static List < ? extends Server > workers;
     
     public CloudControl() {
+    	masterObj = new Master();
+    	masterObj.start();
     	if(osWorker == null) {
     	osWorker = OSFactory.builderV3()
                  .endpoint(CLOUD_CONNECTION_STR)
@@ -582,7 +584,9 @@ public class CloudControl {
     								remoteJarPath,
     								"java");
     	executeCommand(workNodeName,cmd,isWorker);
-    	return getLatestWorkerID();
+    	String ID = getLatestWorkerID();
+    	System.out.println("WorkerID: " + ID);
+    	return ID;
     }
     
     public String runPython(String PyFilePath, String workNodeName, boolean isWorker) throws IOException {
@@ -593,7 +597,9 @@ public class CloudControl {
 				remotePyPath,
 				"python");
     	executeCommand(workNodeName,cmd,isWorker);
-    	return getLatestWorkerID();
+    	String ID = getLatestWorkerID();
+    	System.out.println("WorkerID: " + ID);
+    	return ID;
     }
     
     public String runJar(String JarFilePath, String inputFilePath, String workNodeName, boolean isWorker) throws IOException {
@@ -605,7 +611,9 @@ public class CloudControl {
 				remoteJarPath + " " + remoteInputFilePath,
 				"python");
     	executeCommand(CLIENT_INSTANCE_NAME,cmd,isWorker);
-    	return getLatestWorkerID();
+    	String ID = getLatestWorkerID();
+    	System.out.println("WorkerID: " + ID);
+    	return ID;
     }
     
     public String runPython(String PyFilePath, String inputFilePath, String workNodeName, boolean isWorker) throws IOException {
@@ -617,7 +625,9 @@ public class CloudControl {
 				remotePyPath + " " + remoteInputFilePath,
 				"python");
     	executeCommand(CLIENT_INSTANCE_NAME,cmd,isWorker);
-    	return getLatestWorkerID();
+    	String ID = getLatestWorkerID();
+    	System.out.println("WorkerID: " + ID);
+    	return ID;
     }
     
     public String getWorkerStatus(String workerID) {
@@ -662,15 +672,21 @@ public class CloudControl {
     }
     
     public String getLatestWorkerID() {
-    	List<String> wrklist = getWorkerList();
     	String rtnStr = "";
     	
-    	for (String str: wrklist) {
-    		if (str.compareTo(rtnStr) < 0) {
-    			rtnStr = str;
-    		}
-    	}
-    	
+        File dir = new File("/home/ubuntu/output/");
+        File[] files = dir.listFiles();
+        if (files == null || files.length == 0) {
+            return rtnStr;
+        }
+
+        File lastModifiedFile = files[0];
+        for (int i = 1; i < files.length; i++) {
+           if (lastModifiedFile.lastModified() < files[i].lastModified()) {
+               lastModifiedFile = files[i];
+           }
+        }
+    	rtnStr = lastModifiedFile.getName().split("\\.(?=[^\\.]+$)")[0];
     	return rtnStr;
     }
     
@@ -769,7 +785,8 @@ public class CloudControl {
     private static void testWorkerExecutePy() {
         CloudControl openstack = new CloudControl();
         try {
-        	openstack.runPython("/home/ubuntu/uploads/Helloworld.py", CLIENT_INSTANCE_NAME, false);
+        	String ID = openstack.runPython("/home/ubuntu/uploads/Helloworld.py", CLIENT_INSTANCE_NAME, false);
+        	System.out.println("Worker ID: " + ID);
         }
         catch (Exception ex) {
         	ex.printStackTrace();
@@ -779,7 +796,8 @@ public class CloudControl {
     private static void testWorkerExecuteJar() {
         CloudControl openstack = new CloudControl();
         try {
-        	openstack.runJar("/home/ubuntu/uploads/Helloworld.jar", CLIENT_INSTANCE_NAME, false);
+        	String ID = openstack.runJar("/home/ubuntu/uploads/Helloworld.jar", CLIENT_INSTANCE_NAME, false);
+        	System.out.println("Worker ID: " + ID);
         }
         catch (Exception ex) {
         	ex.printStackTrace();
