@@ -17,7 +17,7 @@ $(document).ready(function () {
     } );
  
     var table = $('#dtBasicExample').DataTable( {
-        orderCellsTop: true
+    	"order": [[ 0, "desc" ]]
     } );
 
     table.buttons().container()

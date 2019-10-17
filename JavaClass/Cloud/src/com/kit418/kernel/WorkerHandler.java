@@ -6,12 +6,12 @@ import java.io.DataOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.io.*; 
 import java.util.*; 
-
 public class WorkerHandler extends Thread {
 	private final DataInputStream dis;
 	private final DataOutputStream dos;
@@ -60,6 +60,28 @@ public class WorkerHandler extends Thread {
 		return this.status;
 	}
 	
+	private void writeInfo(String workerid) {
+		System.out.println("[MASTER] Update Info Start");
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	    String str = String.format("%s,%s,%s,%s", 
+	    							workerid,
+	    							this.status,
+	    							sdf.format(this.StartTime),
+	    							sdf.format(this.EndTime));
+	    try {
+	    	String infoPath = "/home/ubuntu/info/"+workerid+".txt";
+	    	File file = new File(infoPath);
+	    	Files.deleteIfExists(file.toPath());
+		    BufferedWriter writer = new BufferedWriter(new FileWriter(infoPath));
+		    writer.write(str);
+		    writer.close();
+	    }
+	    catch (Exception e) {
+	    	return;
+	    }
+	    System.out.println("[MASTER] Update Info End");
+	}
+	
 	public void run() {
 		this.status = "RUNNING";
 		try {
@@ -74,6 +96,7 @@ public class WorkerHandler extends Thread {
 			this.EndTime = new Date();
 		}
 		if (workerID != null) {
+			writeInfo(workerID);
 			while (true) {
 				try {
 					String cmdOutput = dis.readUTF();
@@ -85,7 +108,9 @@ public class WorkerHandler extends Thread {
 				catch (IOException ex) {
 					this.status = "ERROR";
 					this.EndTime = new Date();
+					writeInfo(workerID);
 				}
+				writeInfo(workerID);
 				break;
 			}
 			try {
@@ -95,9 +120,11 @@ public class WorkerHandler extends Thread {
 			catch (Exception ex) {
 				this.status = "ERROR";
 				this.EndTime = new Date();
+				writeInfo(workerID);
 			}
 		}
 		this.status = "DONE";
 		this.EndTime = new Date();
+		writeInfo(workerID);
 	}
 }
