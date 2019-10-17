@@ -27,7 +27,7 @@
         </thead>
           <tbody>
 		    <tr>
-		    <form action="../PaaS_WS/FileUploadServlet" method="post" enctype="multipart/form-data">
+		    <form action="../PaaS_WS/FileUploadServlet" method="post" enctype="multipart/form-data" onsubmit="return checkFile()">
  
               <th class="th-sm export">
               	<select class="form-control" id="programType" name="programTypeSelect" >
@@ -45,3 +45,23 @@
     </div>
   </div>
 </div>
+<script>
+function checkFile() {
+	var rtnResult = false;
+	var selectedPrg = $( "#programType option:selected" ).text();
+	var uploadFile = $("#filePath").val();
+	var uploadFileExt = uploadFile.substr( (uploadFile.lastIndexOf('.') +1) ).toLowerCase();
+	
+	if (uploadFile) {
+		switch (selectedPrg) {
+			case "JAVA": if (uploadFileExt === "jar") { rtnResult= true; } break;
+			case "Python":  if (uploadFileExt === "py") { rtnResult= true; } break;
+			default: break;
+		}
+	}
+	if (!rtnResult) {
+		alert("Please select a correct file!");
+	}
+	return rtnResult;
+}
+</script>
