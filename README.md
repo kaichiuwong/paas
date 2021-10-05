@@ -1,2 +1,2 @@
 # Platform as a Service
-Our Platform as a Service for KIT418
+Code for providing PaaS by using Cloud Platform
